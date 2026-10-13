@@ -7,8 +7,8 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0a0a0f;
-      color: #e0e0ff;
+      background: #05070a;
+      color: #e8f4ff;
       font-family: 'Segoe UI', system-ui, sans-serif;
       overflow: hidden;
       height: 100vh;
@@ -17,50 +17,49 @@
       display: block;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, #0d1117 0%, #050508 100%);
     }
-    #ui {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-    }
+    #ui { position: absolute; inset: 0; pointer-events: none; }
     #ui * { pointer-events: auto; }
     .panel {
-      background: rgba(10, 15, 30, 0.85);
-      border: 1px solid #00f0ff;
-      border-radius: 12px;
-      padding: 16px;
-      backdrop-filter: blur(8px);
+      background: rgba(8, 14, 28, 0.78);
+      border: 1px solid rgba(0, 220, 255, 0.45);
+      border-radius: 14px;
+      padding: 14px 18px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
     #hud {
       position: absolute;
-      top: 20px; left: 20px;
-      display: flex; gap: 12px;
+      top: 18px; left: 18px;
+      display: flex; gap: 16px;
+      font-weight: 500;
     }
     #log {
       position: absolute;
-      bottom: 20px; left: 20px;
-      width: 320px;
-      max-height: 180px;
+      bottom: 18px; left: 18px;
+      width: 340px;
+      max-height: 160px;
       overflow-y: auto;
       font-size: 13px;
+      line-height: 1.4;
     }
     #actions {
       position: absolute;
-      bottom: 20px; right: 20px;
+      bottom: 18px; right: 18px;
       display: flex; flex-direction: column; gap: 8px;
     }
     button {
-      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
       border: none;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 8px;
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(0, 180, 255, 0.35);
+      transition: transform 0.12s, box-shadow 0.2s;
     }
-    button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 198, 255, 0.4); }
+    button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 180, 255, 0.5); }
     button:active { transform: translateY(0); }
     #trailer {
       position: absolute;
@@ -71,21 +70,22 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 1s;
+      transition: opacity 0.8s ease;
     }
     #trailer.hidden { opacity: 0; pointer-events: none; }
     .logo {
-      font-size: 64px;
+      font-size: 72px;
       font-weight: 900;
-      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      background: linear-gradient(90deg, #00f0ff, #b56cff);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
-      margin-bottom: 20px;
+      letter-spacing: -1px;
+      text-shadow: 0 0 50px rgba(0, 240, 255, 0.6);
+      margin-bottom: 12px;
     }
-    .subtitle { font-size: 24px; color: #aaa; margin-bottom: 40px; }
-    .presented { font-size: 18px; color: #00f0ff; letter-spacing: 2px; }
+    .subtitle { font-size: 22px; color: #aab; margin-bottom: 36px; }
+    .presented { font-size: 16px; color: #00e5ff; letter-spacing: 3px; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -94,14 +94,14 @@
     <div class="logo">T3X DOMINION</div>
     <div class="subtitle">Conquer the Grid. Master the Future.</div>
     <div class="presented">Presented by Futuret3Ch & the T3x Ecosystem</div>
-    <div style="margin-top: 60px; font-size: 14px; color: #666;">Click or press any key to begin</div>
+    <div style="margin-top: 48px; font-size: 13px; color: #556;">Click or press any key to begin</div>
   </div>
   <div id="ui">
     <div id="hud" class="panel">
-      <div>Energy: <span id="energy">120</span></div>
-      <div>Data: <span id="data">45</span></div>
-      <div>Turn: <span id="turn">1</span></div>
-      <div>Territory: <span id="territory">3</span></div>
+      <div>Energy <span id="energy">120</span></div>
+      <div>Data <span id="data">45</span></div>
+      <div>Turn <span id="turn">1</span></div>
+      <div>Territory <span id="territory">3</span></div>
     </div>
     <div id="log" class="panel"></div>
     <div id="actions">
@@ -115,7 +115,7 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let width, height, hexSize = 36;
+    let width, height, hexSize = 42;
 
     function resize() {
       width = canvas.width = window.innerWidth;
@@ -125,8 +125,8 @@
     resize();
 
     function hexToPixel(q, r) {
-      const x = hexSize * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r) + width/2;
-      const y = hexSize * (3/2 * r) + height/2;
+      const x = hexSize * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r) + width / 2;
+      const y = hexSize * (3/2 * r) + height / 2;
       return { x, y };
     }
 
@@ -139,28 +139,34 @@
     function axialRound(q, r) {
       let x = q, z = r, y = -x - z;
       let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
-      const xDiff = Math.abs(rx - x), yDiff = Math.abs(ry - y), zDiff = Math.abs(rz - z);
-      if (xDiff > yDiff && xDiff > zDiff) rx = -ry - rz;
-      else if (yDiff > zDiff) ry = -rx - rz;
+      const xd = Math.abs(rx - x), yd = Math.abs(ry - y), zd = Math.abs(rz - z);
+      if (xd > yd && xd > zd) rx = -ry - rz;
+      else if (yd > zd) ry = -rx - rz;
       else rz = -rx - ry;
       return { q: rx, r: rz };
     }
 
-    function drawHex(x, y, size, color, stroke = '#00f0ff') {
+    function drawHex(x, y, size, fill, stroke, glow = 0) {
+      ctx.save();
+      if (glow > 0) {
+        ctx.shadowColor = stroke;
+        ctx.shadowBlur = glow;
+      }
       ctx.beginPath();
       for (let i = 0; i < 6; i++) {
-        const angle = Math.PI / 3 * i;
+        const angle = Math.PI / 3 * i - Math.PI / 6;
         const hx = x + size * Math.cos(angle);
         const hy = y + size * Math.sin(angle);
         if (i === 0) ctx.moveTo(hx, hy);
         else ctx.lineTo(hx, hy);
       }
       ctx.closePath();
-      ctx.fillStyle = color;
+      ctx.fillStyle = fill;
       ctx.fill();
       ctx.strokeStyle = stroke;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       ctx.stroke();
+      ctx.restore();
     }
 
     const map = {};
@@ -172,15 +178,15 @@
     let playerTerritory = 0;
 
     function initMap() {
-      for (let q = -8; q <= 8; q++) {
-        for (let r = -8; r <= 8; r++) {
-          if (Math.abs(q + r) <= 8) {
+      for (let q = -9; q <= 9; q++) {
+        for (let r = -9; r <= 9; r++) {
+          if (Math.abs(q + r) <= 9) {
             const key = `${q},${r}`;
-            const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(q+r));
+            const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r));
             map[key] = {
               q, r,
-              owner: dist < 2 ? 'player' : (Math.random() > 0.7 ? 'neutral' : null),
-              type: Math.random() > 0.8 ? 'resource' : 'plain',
+              owner: dist < 2 ? 'player' : (Math.random() > 0.75 ? 'neutral' : null),
+              type: Math.random() > 0.82 ? 'resource' : 'plain',
               unit: null
             };
             if (map[key].owner === 'player') playerTerritory++;
@@ -224,7 +230,7 @@
           return;
         }
       }
-      log('No free territory for deployment');
+      log('No free territory');
     }
 
     function endTurn() {
@@ -237,47 +243,67 @@
     }
 
     function aiTurn() {
-      const neutrals = Object.values(map).filter(t => !t.owner && Math.random() > 0.6);
-      if (neutrals.length) {
-        const t = neutrals[0];
-        t.owner = 'ai';
-      }
+      const neutrals = Object.values(map).filter(t => !t.owner && Math.random() > 0.55);
+      if (neutrals.length) neutrals[0].owner = 'ai';
     }
 
     function render() {
-      ctx.clearRect(0, 0, width, height);
-      ctx.globalAlpha = 0.15;
-      for (let i = 0; i < 20; i++) {
-        ctx.strokeStyle = '#00f0ff';
-        ctx.beginPath();
-        ctx.arc(width/2, height/2, 100 + i*40, 0, Math.PI*2);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#05070a';
+      ctx.fillRect(0, 0, width, height);
+
+      const g = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height) * 0.6);
+      g.addColorStop(0, 'rgba(0, 80, 120, 0.15)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
+
       for (const key in map) {
         const tile = map[key];
         const { x, y } = hexToPixel(tile.q, tile.r);
-        let color = '#1a1a2e';
-        if (tile.owner === 'player') color = '#0d4d4d';
-        else if (tile.owner === 'ai') color = '#4d1a1a';
-        else if (tile.type === 'resource') color = '#2a1a4d';
-        if (selected && selected.q === tile.q && selected.r === tile.r) color = '#00f0ff33';
-        drawHex(x, y, hexSize - 2, color);
+        let fill = '#0e1624';
+        let stroke = 'rgba(0, 180, 220, 0.35)';
+        let glow = 0;
+
+        if (tile.owner === 'player') {
+          fill = '#0a3a4a';
+          stroke = '#00e5ff';
+          glow = 12;
+        } else if (tile.owner === 'ai') {
+          fill = '#3a0a1a';
+          stroke = '#ff4466';
+          glow = 10;
+        } else if (tile.type === 'resource') {
+          fill = '#1a1438';
+          stroke = '#aa66ff';
+          glow = 8;
+        }
+
+        if (selected && selected.q === tile.q && selected.r === tile.r) {
+          stroke = '#ffffff';
+          glow = 18;
+        }
+
+        drawHex(x, y, hexSize - 1.5, fill, stroke, glow);
       }
+
       units.forEach(u => {
         const { x, y } = hexToPixel(u.q, u.r);
+        ctx.save();
+        ctx.shadowColor = u.owner === 'player' ? '#00ffaa' : '#ff5555';
+        ctx.shadowBlur = 14;
         ctx.beginPath();
-        ctx.arc(x, y, 14, 0, Math.PI*2);
+        ctx.arc(x, y, 16, 0, Math.PI * 2);
         ctx.fillStyle = u.owner === 'player' ? '#00ffaa' : '#ff5555';
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.restore();
+
         ctx.fillStyle = '#000';
-        ctx.font = '12px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(u.type[0].toUpperCase(), x, y + 4);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(u.type[0].toUpperCase(), x, y);
       });
+
       requestAnimationFrame(render);
     }
 
@@ -287,11 +313,16 @@
       const key = `${hex.q},${hex.r}`;
       const tile = map[key];
       if (!tile) return;
+
       if (tile.unit && tile.unit.owner === 'player') {
         selected = tile.unit;
         log(`Selected ${tile.unit.type}`);
       } else if (selected) {
-        const dist = Math.max(Math.abs(hex.q - selected.q), Math.abs(hex.r - selected.r), Math.abs(hex.q + hex.r - selected.q - selected.r));
+        const dist = Math.max(
+          Math.abs(hex.q - selected.q),
+          Math.abs(hex.r - selected.r),
+          Math.abs(hex.q + hex.r - selected.q - selected.r)
+        );
         if (dist === 1 && !tile.unit) {
           map[`${selected.q},${selected.r}`].unit = null;
           selected.q = hex.q;
@@ -300,7 +331,7 @@
           if (!tile.owner) {
             tile.owner = 'player';
             playerTerritory++;
-            log('Territory captured!');
+            log('Territory captured');
           }
           selected = null;
           updateHUD();
@@ -311,7 +342,7 @@
     const trailer = document.getElementById('trailer');
     function startGame() {
       trailer.classList.add('hidden');
-      setTimeout(() => trailer.style.display = 'none', 1000);
+      setTimeout(() => trailer.style.display = 'none', 800);
       initMap();
       updateHUD();
       log('Welcome to T3x Dominion. Expand your domain.');
@@ -321,7 +352,7 @@
     window.addEventListener('keydown', startGame);
     setTimeout(() => {
       if (!trailer.classList.contains('hidden')) startGame();
-    }, 8000);
+    }, 7000);
   </script>
 </body>
 </html>
