@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T3x Dominion | Presented by Futuret3Ch</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #0d1117 0%, #050508 100%);
+    }
+    #ui {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+    }
+    #ui * { pointer-events: auto; }
+    .panel {
+      background: rgba(10, 15, 30, 0.85);
+      border: 1px solid #00f0ff;
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+    #hud {
+      position: absolute;
+      top: 20px; left: 20px;
+      display: flex; gap: 12px;
+    }
+    #log {
+      position: absolute;
+      bottom: 20px; left: 20px;
+      width: 320px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    #actions {
+      position: absolute;
+      bottom: 20px; right: 20px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    button {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 198, 255, 0.4); }
+    button:active { transform: translateY(0); }
+    #trailer {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 1s;
+    }
+    #trailer.hidden { opacity: 0; pointer-events: none; }
+    .logo {
+      font-size: 64px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #00f0ff, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
+      margin-bottom: 20px;
+    }
+    .subtitle { font-size: 24px; color: #aaa; margin-bottom: 40px; }
+    .presented { font-size: 18px; color: #00f0ff; letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="trailer">
+    <div class="logo">T3X DOMINION</div>
+    <div class="subtitle">Conquer the Grid. Master the Future.</div>
+    <div class="presented">Presented by Futuret3Ch & the T3x Ecosystem</div>
+    <div style="margin-top: 60px; font-size: 14px; color: #666;">Click or press any key to begin</div>
+  </div>
+  <div id="ui">
+    <div id="hud" class="panel">
+      <div>Energy: <span id="energy">120</span></div>
+      <div>Data: <span id="data">45</span></div>
+      <div>Turn: <span id="turn">1</span></div>
+      <div>Territory: <span id="territory">3</span></div>
+    </div>
+    <div id="log" class="panel"></div>
+    <div id="actions">
+      <button onclick="endTurn()">End Turn</button>
+      <button onclick="spawnUnit('scout')">Deploy Scout (20E)</button>
+      <button onclick="spawnUnit('defender')">Deploy Defender (35E)</button>
+      <button onclick="spawnUnit('attacker')">Deploy Attacker (50E)</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, hexSize = 36;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function hexToPixel(q, r) {
+      const x = hexSize * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r) + width/2;
+      const y = hexSize * (3/2 * r) + height/2;
+      return { x, y };
+    }
+
+    function pixelToHex(x, y) {
+      const q = (Math.sqrt(3)/3 * (x - width/2) - 1/3 * (y - height/2)) / hexSize;
+      const r = (2/3 * (y - height/2)) / hexSize;
+      return axialRound(q, r);
+    }
+
+    function axialRound(q, r) {
+      let x = q, z = r, y = -x - z;
+      let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+      const xDiff = Math.abs(rx - x), yDiff = Math.abs(ry - y), zDiff = Math.abs(rz - z);
+      if (xDiff > yDiff && xDiff > zDiff) rx = -ry - rz;
+      else if (yDiff > zDiff) ry = -rx - rz;
+      else rz = -rx - ry;
+      return { q: rx, r: rz };
+    }
+
+    function drawHex(x, y, size, color, stroke = '#00f0ff') {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i;
+        const hx = x + size * Math.cos(angle);
+        const hy = y + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    const map = {};
+    const units = [];
+    let selected = null;
+    let turn = 1;
+    let energy = 120;
+    let data = 45;
+    let playerTerritory = 0;
+
+    function initMap() {
+      for (let q = -8; q <= 8; q++) {
+        for (let r = -8; r <= 8; r++) {
+          if (Math.abs(q + r) <= 8) {
+            const key = `${q},${r}`;
+            const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(q+r));
+            map[key] = {
+              q, r,
+              owner: dist < 2 ? 'player' : (Math.random() > 0.7 ? 'neutral' : null),
+              type: Math.random() > 0.8 ? 'resource' : 'plain',
+              unit: null
+            };
+            if (map[key].owner === 'player') playerTerritory++;
+          }
+        }
+      }
+      spawnUnitAt('scout', 0, 0, 'player');
+      spawnUnitAt('defender', 1, 0, 'player');
+    }
+
+    function spawnUnitAt(type, q, r, owner) {
+      const key = `${q},${r}`;
+      if (!map[key]) return;
+      const unit = { type, q, r, owner, hp: type === 'attacker' ? 80 : type === 'defender' ? 120 : 60 };
+      units.push(unit);
+      map[key].unit = unit;
+    }
+
+    function log(msg) {
+      const el = document.getElementById('log');
+      el.innerHTML = `<div>${msg}</div>` + el.innerHTML;
+    }
+
+    function updateHUD() {
+      document.getElementById('energy').textContent = energy;
+      document.getElementById('data').textContent = data;
+      document.getElementById('turn').textContent = turn;
+      document.getElementById('territory').textContent = playerTerritory;
+    }
+
+    function spawnUnit(type) {
+      const costs = { scout: 20, defender: 35, attacker: 50 };
+      if (energy < costs[type]) return log('Not enough Energy');
+      for (const key in map) {
+        const tile = map[key];
+        if (tile.owner === 'player' && !tile.unit) {
+          energy -= costs[type];
+          spawnUnitAt(type, tile.q, tile.r, 'player');
+          log(`Deployed ${type}`);
+          updateHUD();
+          return;
+        }
+      }
+      log('No free territory for deployment');
+    }
+
+    function endTurn() {
+      turn++;
+      energy += 30 + Math.floor(playerTerritory / 2);
+      data += 5;
+      aiTurn();
+      log(`Turn ${turn} begins. +Energy`);
+      updateHUD();
+    }
+
+    function aiTurn() {
+      const neutrals = Object.values(map).filter(t => !t.owner && Math.random() > 0.6);
+      if (neutrals.length) {
+        const t = neutrals[0];
+        t.owner = 'ai';
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.globalAlpha = 0.15;
+      for (let i = 0; i < 20; i++) {
+        ctx.strokeStyle = '#00f0ff';
+        ctx.beginPath();
+        ctx.arc(width/2, height/2, 100 + i*40, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      for (const key in map) {
+        const tile = map[key];
+        const { x, y } = hexToPixel(tile.q, tile.r);
+        let color = '#1a1a2e';
+        if (tile.owner === 'player') color = '#0d4d4d';
+        else if (tile.owner === 'ai') color = '#4d1a1a';
+        else if (tile.type === 'resource') color = '#2a1a4d';
+        if (selected && selected.q === tile.q && selected.r === tile.r) color = '#00f0ff33';
+        drawHex(x, y, hexSize - 2, color);
+      }
+      units.forEach(u => {
+        const { x, y } = hexToPixel(u.q, u.r);
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI*2);
+        ctx.fillStyle = u.owner === 'player' ? '#00ffaa' : '#ff5555';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#000';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(u.type[0].toUpperCase(), x, y + 4);
+      });
+      requestAnimationFrame(render);
+    }
+
+    canvas.addEventListener('click', e => {
+      const rect = canvas.getBoundingClientRect();
+      const hex = pixelToHex(e.clientX - rect.left, e.clientY - rect.top);
+      const key = `${hex.q},${hex.r}`;
+      const tile = map[key];
+      if (!tile) return;
+      if (tile.unit && tile.unit.owner === 'player') {
+        selected = tile.unit;
+        log(`Selected ${tile.unit.type}`);
+      } else if (selected) {
+        const dist = Math.max(Math.abs(hex.q - selected.q), Math.abs(hex.r - selected.r), Math.abs(hex.q + hex.r - selected.q - selected.r));
+        if (dist === 1 && !tile.unit) {
+          map[`${selected.q},${selected.r}`].unit = null;
+          selected.q = hex.q;
+          selected.r = hex.r;
+          tile.unit = selected;
+          if (!tile.owner) {
+            tile.owner = 'player';
+            playerTerritory++;
+            log('Territory captured!');
+          }
+          selected = null;
+          updateHUD();
+        }
+      }
+    });
+
+    const trailer = document.getElementById('trailer');
+    function startGame() {
+      trailer.classList.add('hidden');
+      setTimeout(() => trailer.style.display = 'none', 1000);
+      initMap();
+      updateHUD();
+      log('Welcome to T3x Dominion. Expand your domain.');
+      render();
+    }
+    trailer.addEventListener('click', startGame);
+    window.addEventListener('keydown', startGame);
+    setTimeout(() => {
+      if (!trailer.classList.contains('hidden')) startGame();
+    }, 8000);
+  </script>
+</body>
+</html>
