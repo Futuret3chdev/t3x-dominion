@@ -23,50 +23,50 @@
     #ui { position: absolute; inset: 0; pointer-events: none; }
     #ui * { pointer-events: auto; }
     .panel {
-      background: rgba(8, 14, 28, 0.82);
-      border: 1px solid rgba(0, 220, 255, 0.45);
+      background: rgba(8, 14, 28, 0.85);
+      border: 1px solid rgba(0, 220, 255, 0.4);
       border-radius: 12px;
       padding: 10px 14px;
       backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
     #hud {
       position: absolute;
-      top: 10px; left: 10px; right: 10px;
+      top: 8px; left: 8px; right: 8px;
       display: flex; justify-content: space-between; flex-wrap: wrap;
-      gap: 8px;
-      font-size: 14px;
+      gap: 6px;
+      font-size: 13px;
       font-weight: 500;
     }
     #log {
       position: absolute;
-      bottom: 120px; left: 10px;
-      width: min(320px, 70vw);
-      max-height: 100px;
+      bottom: 110px; left: 8px;
+      width: min(300px, 65vw);
+      max-height: 90px;
       overflow-y: auto;
-      font-size: 12px;
-      line-height: 1.35;
+      font-size: 11px;
+      line-height: 1.3;
     }
     #actions {
       position: absolute;
-      bottom: 10px; left: 10px; right: 10px;
-      display: flex; flex-wrap: wrap; gap: 6px;
+      bottom: 8px; left: 8px; right: 8px;
+      display: flex; flex-wrap: wrap; gap: 5px;
       justify-content: center;
     }
     button {
       background: linear-gradient(135deg, #00d4ff, #0099ff);
       border: none;
       color: #fff;
-      padding: 10px 14px;
+      padding: 9px 12px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 180, 255, 0.35);
+      box-shadow: 0 3px 10px rgba(0, 180, 255, 0.3);
       flex: 1 1 auto;
-      min-width: 140px;
+      min-width: 110px;
     }
-    button:active { transform: scale(0.98); }
+    button:active { transform: scale(0.97); }
     #trailer {
       position: absolute;
       inset: 0;
@@ -76,25 +76,25 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.8s ease;
+      transition: opacity 0.7s ease;
       text-align: center;
-      padding: 20px;
+      padding: 16px;
     }
     #trailer.hidden { opacity: 0; pointer-events: none; }
     .logo {
-      font-size: clamp(36px, 10vw, 72px);
+      font-size: clamp(32px, 9vw, 64px);
       font-weight: 900;
       background: linear-gradient(90deg, #00f0ff, #b56cff);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
-    .subtitle { font-size: clamp(16px, 4vw, 22px); color: #aab; margin-bottom: 24px; }
-    .presented { font-size: clamp(12px, 3vw, 16px); color: #00e5ff; letter-spacing: 2px; text-transform: uppercase; }
+    .subtitle { font-size: clamp(14px, 3.5vw, 20px); color: #aab; margin-bottom: 20px; }
+    .presented { font-size: clamp(11px, 2.8vw, 15px); color: #00e5ff; letter-spacing: 1.5px; text-transform: uppercase; }
     @media (max-width: 600px) {
-      #log { bottom: 140px; }
-      button { min-width: 120px; padding: 12px 10px; }
+      #log { bottom: 130px; }
+      button { min-width: 100px; padding: 10px 8px; }
     }
   </style>
 </head>
@@ -102,38 +102,40 @@
   <canvas id="gameCanvas"></canvas>
   <div id="trailer">
     <div class="logo">T3X DOMINION</div>
-    <div class="subtitle">Conquer the Grid. Master the Future.</div>
+    <div class="subtitle">Wartime Strategy on the Grid</div>
     <div class="presented">Presented by Futuret3Ch & the T3x Ecosystem</div>
-    <div style="margin-top: 32px; font-size: 13px; color: #556;">Tap or press any key to begin</div>
+    <div style="margin-top: 28px; font-size: 12px; color: #556;">Tap or press any key to begin</div>
   </div>
   <div id="ui">
     <div id="hud" class="panel">
-      <div>Energy <span id="energy">120</span></div>
-      <div>Data <span id="data">45</span></div>
+      <div>Energy <span id="energy">150</span></div>
+      <div>Data <span id="data">40</span></div>
       <div>Turn <span id="turn">1</span></div>
-      <div>Territory <span id="territory">3</span></div>
+      <div>Territory <span id="territory">4</span></div>
+      <div>Units <span id="units">2</span></div>
     </div>
     <div id="log" class="panel"></div>
     <div id="actions">
       <button onclick="endTurn()">End Turn</button>
-      <button onclick="spawnUnit('scout')">Scout (20E)</button>
-      <button onclick="spawnUnit('defender')">Defender (35E)</button>
-      <button onclick="spawnUnit('attacker')">Attacker (50E)</button>
+      <button onclick="spawnUnit('scout')">Scout (25E)</button>
+      <button onclick="spawnUnit('defender')">Defender (40E)</button>
+      <button onclick="spawnUnit('attacker')">Attacker (60E)</button>
+      <button onclick="spawnUnit('artillery')">Artillery (80E)</button>
     </div>
   </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let width, height, hexSize = 32;
-    const MAP_RADIUS = 8;
+    let width, height, hexSize = 28;
+    const MAP_RADIUS = 10;
 
     function resize() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      const maxDim = Math.min(width, height) * 0.72;
-      const approxDiameter = (MAP_RADIUS * 2 + 1) * 1.8;
-      hexSize = Math.max(18, Math.min(48, maxDim / approxDiameter));
+      const maxDim = Math.min(width, height) * 0.68;
+      const approxDiameter = (MAP_RADIUS * 2 + 1) * 1.75;
+      hexSize = Math.max(16, Math.min(40, maxDim / approxDiameter));
     }
     window.addEventListener('resize', resize);
     resize();
@@ -160,6 +162,10 @@
       return { q: rx, r: rz };
     }
 
+    function hexDistance(a, b) {
+      return Math.max(Math.abs(a.q - b.q), Math.abs(a.r - b.r), Math.abs(a.q + a.r - b.q - b.r));
+    }
+
     function drawHex(x, y, size, fill, stroke, glow = 0) {
       ctx.save();
       if (glow > 0) {
@@ -178,17 +184,24 @@
       ctx.fillStyle = fill;
       ctx.fill();
       ctx.strokeStyle = stroke;
-      ctx.lineWidth = Math.max(1.5, size * 0.06);
+      ctx.lineWidth = Math.max(1.2, size * 0.05);
       ctx.stroke();
       ctx.restore();
     }
+
+    const UNIT_STATS = {
+      scout: { cost: 25, hp: 50, atk: 15, range: 1, move: 2, color: '#00ffaa' },
+      defender: { cost: 40, hp: 120, atk: 10, range: 1, move: 1, color: '#00ccff' },
+      attacker: { cost: 60, hp: 80, atk: 30, range: 1, move: 1, color: '#ffaa00' },
+      artillery: { cost: 80, hp: 60, atk: 40, range: 2, move: 1, color: '#ff66aa' }
+    };
 
     const map = {};
     const units = [];
     let selected = null;
     let turn = 1;
-    let energy = 120;
-    let data = 45;
+    let energy = 150;
+    let data = 40;
     let playerTerritory = 0;
 
     function initMap() {
@@ -197,26 +210,38 @@
           if (Math.abs(q + r) <= MAP_RADIUS) {
             const key = `${q},${r}`;
             const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r));
+            let owner = null;
+            if (dist < 2) owner = 'player';
+            else if (dist > 7 && Math.random() > 0.6) owner = 'ai';
             map[key] = {
               q, r,
-              owner: dist < 2 ? 'player' : (Math.random() > 0.75 ? 'neutral' : null),
-              type: Math.random() > 0.82 ? 'resource' : 'plain',
+              owner,
+              type: Math.random() > 0.85 ? 'resource' : 'plain',
               unit: null
             };
-            if (map[key].owner === 'player') playerTerritory++;
+            if (owner === 'player') playerTerritory++;
           }
         }
       }
       spawnUnitAt('scout', 0, 0, 'player');
       spawnUnitAt('defender', 1, 0, 'player');
+      spawnUnitAt('attacker', 6, -2, 'ai');
+      spawnUnitAt('defender', 5, 1, 'ai');
     }
 
     function spawnUnitAt(type, q, r, owner) {
       const key = `${q},${r}`;
-      if (!map[key]) return;
-      const unit = { type, q, r, owner, hp: type === 'attacker' ? 80 : type === 'defender' ? 120 : 60 };
+      if (!map[key] || map[key].unit) return false;
+      const stats = UNIT_STATS[type];
+      const unit = {
+        type, q, r, owner,
+        hp: stats.hp, maxHp: stats.hp,
+        atk: stats.atk, range: stats.range, move: stats.move,
+        moved: false
+      };
       units.push(unit);
       map[key].unit = unit;
+      return true;
     }
 
     function log(msg) {
@@ -229,44 +254,113 @@
       document.getElementById('data').textContent = data;
       document.getElementById('turn').textContent = turn;
       document.getElementById('territory').textContent = playerTerritory;
+      document.getElementById('units').textContent = units.filter(u => u.owner === 'player').length;
     }
 
     function spawnUnit(type) {
-      const costs = { scout: 20, defender: 35, attacker: 50 };
-      if (energy < costs[type]) return log('Not enough Energy');
+      const stats = UNIT_STATS[type];
+      if (energy < stats.cost) return log('Not enough Energy');
       for (const key in map) {
         const tile = map[key];
         if (tile.owner === 'player' && !tile.unit) {
-          energy -= costs[type];
+          energy -= stats.cost;
           spawnUnitAt(type, tile.q, tile.r, 'player');
           log(`Deployed ${type}`);
           updateHUD();
           return;
         }
       }
-      log('No free territory');
+      log('No free territory for deployment');
     }
 
     function endTurn() {
+      energy += 20 + Math.floor(playerTerritory * 1.5);
+      data += 3 + Math.floor(playerTerritory / 4);
+      units.forEach(u => { if (u.owner === 'player') u.moved = false; });
       turn++;
-      energy += 30 + Math.floor(playerTerritory / 2);
-      data += 5;
       aiTurn();
-      log(`Turn ${turn} begins. +Energy`);
+      log(`Turn ${turn}. +Energy from territory`);
       updateHUD();
+      checkVictory();
     }
 
     function aiTurn() {
-      const neutrals = Object.values(map).filter(t => !t.owner && Math.random() > 0.55);
-      if (neutrals.length) neutrals[0].owner = 'ai';
+      const aiUnits = units.filter(u => u.owner === 'ai');
+      aiUnits.forEach(u => {
+        for (const key in map) {
+          const tile = map[key];
+          if (tile.unit && tile.unit.owner === 'player') {
+            const dist = hexDistance(u, tile);
+            if (dist <= u.range) {
+              resolveCombat(u, tile.unit);
+              return;
+            }
+          }
+        }
+        const neighbors = getNeighbors(u.q, u.r);
+        for (const n of neighbors) {
+          const key = `${n.q},${n.r}`;
+          const tile = map[key];
+          if (tile && !tile.unit && (!tile.owner || tile.owner === 'ai')) {
+            map[`${u.q},${u.r}`].unit = null;
+            u.q = n.q; u.r = n.r;
+            tile.unit = u;
+            if (!tile.owner) tile.owner = 'ai';
+            return;
+          }
+        }
+      });
+      if (Math.random() > 0.6) {
+        for (const key in map) {
+          const tile = map[key];
+          if (tile.owner === 'ai' && !tile.unit) {
+            spawnUnitAt(Math.random() > 0.5 ? 'attacker' : 'defender', tile.q, tile.r, 'ai');
+            break;
+          }
+        }
+      }
+    }
+
+    function getNeighbors(q, r) {
+      const dirs = [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+      return dirs.map(([dq, dr]) => ({ q: q + dq, r: r + dr }));
+    }
+
+    function resolveCombat(attacker, defender) {
+      const dmg = Math.max(5, attacker.atk - Math.floor(Math.random() * 10));
+      defender.hp -= dmg;
+      log(`${attacker.owner} ${attacker.type} hits for ${dmg}`);
+      if (defender.hp <= 0) {
+        const idx = units.indexOf(defender);
+        if (idx > -1) units.splice(idx, 1);
+        const key = `${defender.q},${defender.r}`;
+        map[key].unit = null;
+        if (map[key].owner === 'player') {
+          playerTerritory--;
+          map[key].owner = null;
+        }
+        log(`${defender.type} destroyed`);
+      }
+    }
+
+    function checkVictory() {
+      const playerTiles = Object.values(map).filter(t => t.owner === 'player').length;
+      const total = Object.keys(map).length;
+      if (playerTiles > total * 0.55) {
+        log('VICTORY — You dominate the grid!');
+        alert('Victory! You control the majority of the grid.');
+      }
+      if (units.filter(u => u.owner === 'ai').length === 0 && playerTiles > 10) {
+        log('Enemy forces eliminated!');
+      }
     }
 
     function render() {
       ctx.fillStyle = '#05070a';
       ctx.fillRect(0, 0, width, height);
 
-      const g = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height) * 0.6);
-      g.addColorStop(0, 'rgba(0, 80, 120, 0.15)');
+      const g = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height) * 0.55);
+      g.addColorStop(0, 'rgba(0, 70, 110, 0.12)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, width, height);
@@ -274,46 +368,53 @@
       for (const key in map) {
         const tile = map[key];
         const { x, y } = hexToPixel(tile.q, tile.r);
-        let fill = '#0e1624';
-        let stroke = 'rgba(0, 180, 220, 0.4)';
+        let fill = '#0c1420';
+        let stroke = 'rgba(0, 170, 210, 0.35)';
         let glow = 0;
 
         if (tile.owner === 'player') {
-          fill = '#0a3a4a';
+          fill = '#0a3545';
           stroke = '#00e5ff';
-          glow = Math.min(14, hexSize * 0.3);
-        } else if (tile.owner === 'ai') {
-          fill = '#3a0a1a';
-          stroke = '#ff4466';
-          glow = Math.min(12, hexSize * 0.28);
-        } else if (tile.type === 'resource') {
-          fill = '#1a1438';
-          stroke = '#aa66ff';
           glow = Math.min(10, hexSize * 0.25);
+        } else if (tile.owner === 'ai') {
+          fill = '#351018';
+          stroke = '#ff4466';
+          glow = Math.min(9, hexSize * 0.22);
+        } else if (tile.type === 'resource') {
+          fill = '#181430';
+          stroke = '#aa66ff';
+          glow = Math.min(7, hexSize * 0.18);
         }
 
         if (selected && selected.q === tile.q && selected.r === tile.r) {
           stroke = '#ffffff';
-          glow = Math.min(20, hexSize * 0.45);
+          glow = Math.min(16, hexSize * 0.4);
         }
 
-        drawHex(x, y, hexSize * 0.92, fill, stroke, glow);
+        drawHex(x, y, hexSize * 0.9, fill, stroke, glow);
       }
 
       units.forEach(u => {
         const { x, y } = hexToPixel(u.q, u.r);
-        const r = hexSize * 0.38;
+        const r = hexSize * 0.36;
+        const stats = UNIT_STATS[u.type];
         ctx.save();
-        ctx.shadowColor = u.owner === 'player' ? '#00ffaa' : '#ff5555';
-        ctx.shadowBlur = Math.min(16, hexSize * 0.4);
+        ctx.shadowColor = stats.color;
+        ctx.shadowBlur = Math.min(12, hexSize * 0.35);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = u.owner === 'player' ? '#00ffaa' : '#ff5555';
+        ctx.fillStyle = stats.color;
         ctx.fill();
         ctx.restore();
 
+        const hpPct = u.hp / u.maxHp;
+        ctx.fillStyle = '#222';
+        ctx.fillRect(x - r, y + r + 2, r * 2, 3);
+        ctx.fillStyle = hpPct > 0.5 ? '#0f0' : '#f44';
+        ctx.fillRect(x - r, y + r + 2, r * 2 * hpPct, 3);
+
         ctx.fillStyle = '#000';
-        ctx.font = `bold ${Math.max(10, hexSize * 0.32)}px sans-serif`;
+        ctx.font = `bold ${Math.max(9, hexSize * 0.28)}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(u.type[0].toUpperCase(), x, y);
@@ -331,14 +432,15 @@
 
       if (tile.unit && tile.unit.owner === 'player') {
         selected = tile.unit;
-        log(`Selected ${tile.unit.type}`);
-      } else if (selected) {
-        const dist = Math.max(
-          Math.abs(hex.q - selected.q),
-          Math.abs(hex.r - selected.r),
-          Math.abs(hex.q + hex.r - selected.q - selected.r)
-        );
-        if (dist === 1 && !tile.unit) {
+        log(`Selected ${tile.unit.type} (HP ${tile.unit.hp})`);
+      } else if (selected && !selected.moved) {
+        const dist = hexDistance(selected, hex);
+        if (tile.unit && tile.unit.owner === 'ai' && dist <= selected.range) {
+          resolveCombat(selected, tile.unit);
+          selected.moved = true;
+          selected = null;
+          updateHUD();
+        } else if (dist <= selected.move && !tile.unit) {
           map[`${selected.q},${selected.r}`].unit = null;
           selected.q = hex.q;
           selected.r = hex.r;
@@ -348,6 +450,7 @@
             playerTerritory++;
             log('Territory captured');
           }
+          selected.moved = true;
           selected = null;
           updateHUD();
         }
@@ -357,17 +460,17 @@
     const trailer = document.getElementById('trailer');
     function startGame() {
       trailer.classList.add('hidden');
-      setTimeout(() => trailer.style.display = 'none', 800);
+      setTimeout(() => trailer.style.display = 'none', 700);
       initMap();
       updateHUD();
-      log('Welcome to T3x Dominion.');
+      log('T3x Dominion — Expand, fight, dominate.');
       render();
     }
     trailer.addEventListener('click', startGame);
     window.addEventListener('keydown', startGame);
     setTimeout(() => {
       if (!trailer.classList.contains('hidden')) startGame();
-    }, 6000);
+    }, 5000);
   </script>
 </body>
 </html>
