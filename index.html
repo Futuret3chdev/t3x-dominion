@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>T3x Dominion | Presented by Futuret3Ch</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,55 +12,61 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
       overflow: hidden;
       height: 100vh;
+      height: 100dvh;
     }
     #gameCanvas {
       display: block;
       width: 100%;
       height: 100%;
+      touch-action: none;
     }
     #ui { position: absolute; inset: 0; pointer-events: none; }
     #ui * { pointer-events: auto; }
     .panel {
-      background: rgba(8, 14, 28, 0.78);
+      background: rgba(8, 14, 28, 0.82);
       border: 1px solid rgba(0, 220, 255, 0.45);
-      border-radius: 14px;
-      padding: 14px 18px;
+      border-radius: 12px;
+      padding: 10px 14px;
       backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
     }
     #hud {
       position: absolute;
-      top: 18px; left: 18px;
-      display: flex; gap: 16px;
+      top: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
       font-weight: 500;
     }
     #log {
       position: absolute;
-      bottom: 18px; left: 18px;
-      width: 340px;
-      max-height: 160px;
+      bottom: 120px; left: 10px;
+      width: min(320px, 70vw);
+      max-height: 100px;
       overflow-y: auto;
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: 12px;
+      line-height: 1.35;
     }
     #actions {
       position: absolute;
-      bottom: 18px; right: 18px;
-      display: flex; flex-direction: column; gap: 8px;
+      bottom: 10px; left: 10px; right: 10px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: center;
     }
     button {
       background: linear-gradient(135deg, #00d4ff, #0099ff);
       border: none;
       color: #fff;
-      padding: 11px 20px;
-      border-radius: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
-      box-shadow: 0 4px 16px rgba(0, 180, 255, 0.35);
-      transition: transform 0.12s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(0, 180, 255, 0.35);
+      flex: 1 1 auto;
+      min-width: 140px;
     }
-    button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 180, 255, 0.5); }
-    button:active { transform: translateY(0); }
+    button:active { transform: scale(0.98); }
     #trailer {
       position: absolute;
       inset: 0;
@@ -71,21 +77,25 @@
       align-items: center;
       justify-content: center;
       transition: opacity 0.8s ease;
+      text-align: center;
+      padding: 20px;
     }
     #trailer.hidden { opacity: 0; pointer-events: none; }
     .logo {
-      font-size: 72px;
+      font-size: clamp(36px, 10vw, 72px);
       font-weight: 900;
       background: linear-gradient(90deg, #00f0ff, #b56cff);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      letter-spacing: -1px;
-      text-shadow: 0 0 50px rgba(0, 240, 255, 0.6);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    .subtitle { font-size: 22px; color: #aab; margin-bottom: 36px; }
-    .presented { font-size: 16px; color: #00e5ff; letter-spacing: 3px; text-transform: uppercase; }
+    .subtitle { font-size: clamp(16px, 4vw, 22px); color: #aab; margin-bottom: 24px; }
+    .presented { font-size: clamp(12px, 3vw, 16px); color: #00e5ff; letter-spacing: 2px; text-transform: uppercase; }
+    @media (max-width: 600px) {
+      #log { bottom: 140px; }
+      button { min-width: 120px; padding: 12px 10px; }
+    }
   </style>
 </head>
 <body>
@@ -94,7 +104,7 @@
     <div class="logo">T3X DOMINION</div>
     <div class="subtitle">Conquer the Grid. Master the Future.</div>
     <div class="presented">Presented by Futuret3Ch & the T3x Ecosystem</div>
-    <div style="margin-top: 48px; font-size: 13px; color: #556;">Click or press any key to begin</div>
+    <div style="margin-top: 32px; font-size: 13px; color: #556;">Tap or press any key to begin</div>
   </div>
   <div id="ui">
     <div id="hud" class="panel">
@@ -106,20 +116,24 @@
     <div id="log" class="panel"></div>
     <div id="actions">
       <button onclick="endTurn()">End Turn</button>
-      <button onclick="spawnUnit('scout')">Deploy Scout (20E)</button>
-      <button onclick="spawnUnit('defender')">Deploy Defender (35E)</button>
-      <button onclick="spawnUnit('attacker')">Deploy Attacker (50E)</button>
+      <button onclick="spawnUnit('scout')">Scout (20E)</button>
+      <button onclick="spawnUnit('defender')">Defender (35E)</button>
+      <button onclick="spawnUnit('attacker')">Attacker (50E)</button>
     </div>
   </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let width, height, hexSize = 42;
+    let width, height, hexSize = 32;
+    const MAP_RADIUS = 8;
 
     function resize() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
+      const maxDim = Math.min(width, height) * 0.72;
+      const approxDiameter = (MAP_RADIUS * 2 + 1) * 1.8;
+      hexSize = Math.max(18, Math.min(48, maxDim / approxDiameter));
     }
     window.addEventListener('resize', resize);
     resize();
@@ -164,7 +178,7 @@
       ctx.fillStyle = fill;
       ctx.fill();
       ctx.strokeStyle = stroke;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = Math.max(1.5, size * 0.06);
       ctx.stroke();
       ctx.restore();
     }
@@ -178,9 +192,9 @@
     let playerTerritory = 0;
 
     function initMap() {
-      for (let q = -9; q <= 9; q++) {
-        for (let r = -9; r <= 9; r++) {
-          if (Math.abs(q + r) <= 9) {
+      for (let q = -MAP_RADIUS; q <= MAP_RADIUS; q++) {
+        for (let r = -MAP_RADIUS; r <= MAP_RADIUS; r++) {
+          if (Math.abs(q + r) <= MAP_RADIUS) {
             const key = `${q},${r}`;
             const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r));
             map[key] = {
@@ -261,44 +275,45 @@
         const tile = map[key];
         const { x, y } = hexToPixel(tile.q, tile.r);
         let fill = '#0e1624';
-        let stroke = 'rgba(0, 180, 220, 0.35)';
+        let stroke = 'rgba(0, 180, 220, 0.4)';
         let glow = 0;
 
         if (tile.owner === 'player') {
           fill = '#0a3a4a';
           stroke = '#00e5ff';
-          glow = 12;
+          glow = Math.min(14, hexSize * 0.3);
         } else if (tile.owner === 'ai') {
           fill = '#3a0a1a';
           stroke = '#ff4466';
-          glow = 10;
+          glow = Math.min(12, hexSize * 0.28);
         } else if (tile.type === 'resource') {
           fill = '#1a1438';
           stroke = '#aa66ff';
-          glow = 8;
+          glow = Math.min(10, hexSize * 0.25);
         }
 
         if (selected && selected.q === tile.q && selected.r === tile.r) {
           stroke = '#ffffff';
-          glow = 18;
+          glow = Math.min(20, hexSize * 0.45);
         }
 
-        drawHex(x, y, hexSize - 1.5, fill, stroke, glow);
+        drawHex(x, y, hexSize * 0.92, fill, stroke, glow);
       }
 
       units.forEach(u => {
         const { x, y } = hexToPixel(u.q, u.r);
+        const r = hexSize * 0.38;
         ctx.save();
         ctx.shadowColor = u.owner === 'player' ? '#00ffaa' : '#ff5555';
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = Math.min(16, hexSize * 0.4);
         ctx.beginPath();
-        ctx.arc(x, y, 16, 0, Math.PI * 2);
+        ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fillStyle = u.owner === 'player' ? '#00ffaa' : '#ff5555';
         ctx.fill();
         ctx.restore();
 
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 13px sans-serif';
+        ctx.font = `bold ${Math.max(10, hexSize * 0.32)}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(u.type[0].toUpperCase(), x, y);
@@ -345,14 +360,14 @@
       setTimeout(() => trailer.style.display = 'none', 800);
       initMap();
       updateHUD();
-      log('Welcome to T3x Dominion. Expand your domain.');
+      log('Welcome to T3x Dominion.');
       render();
     }
     trailer.addEventListener('click', startGame);
     window.addEventListener('keydown', startGame);
     setTimeout(() => {
       if (!trailer.classList.contains('hidden')) startGame();
-    }, 7000);
+    }, 6000);
   </script>
 </body>
 </html>
