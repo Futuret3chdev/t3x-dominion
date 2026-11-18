@@ -374,6 +374,16 @@
     });
   }
 
+  function syncHud() {
+    const app = document.querySelector(".app");
+    if (!app) return;
+    const sheet = document.getElementById("cascade");
+    const tray = document.getElementById("cards");
+    const detail = document.getElementById("cardDetail");
+    const viewing = (sheet && !sheet.hidden) || (tray && !tray.hidden);
+    app.classList.toggle("viewing", !!viewing);
+    app.classList.toggle("focuscard", !!(sheet && !sheet.hidden && detail && !detail.hidden));
+  }
   let openKind = "power";
   let deckList = [];
   function stepCard(dir) {
@@ -557,6 +567,7 @@
       box.appendChild(stage);
     }
     box.dataset.id = card.id;
+    syncHud();
     const h = document.createElement("b");
     h.textContent = card.name;
     const p = document.createElement("p");
@@ -638,6 +649,7 @@
     const sheet = document.getElementById("cascade");
     if (!sheet) return;
     sheet.hidden = false;
+    syncHud();
     sheet.innerHTML = "";
     const head = document.createElement("div");
     head.className = "row";
@@ -646,7 +658,7 @@
     req.className = "ghost"; req.type = "button"; req.textContent = "Requests";
     const close = document.createElement("button");
     close.className = "ghost"; close.type = "button"; close.textContent = "Close";
-    close.onclick = () => { sheet.hidden = true; };
+    close.onclick = () => { sheet.hidden = true; syncHud(); };
     head.appendChild(req); head.appendChild(close);
     sheet.appendChild(head);
     const detail = document.createElement("div");
@@ -693,7 +705,9 @@
       openCascade(unit ? "units" : "power");
       const card = (unit ? unitCards() : powerCards()).find(c => c.id === id);
       if (card) showDetail(card);
-    }
+      syncHud();
+    },
+    sync: syncHud
   };
   meta();
 })();
