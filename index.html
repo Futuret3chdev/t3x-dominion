@@ -36,7 +36,7 @@
   .swatch { width: 12px; height: 12px; display: inline-block; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
   .say { margin: 8px 0 0; border-radius: 8px; padding: 8px 10px; font-size: 14px; line-height: 1.35; background: var(--bg); }
   .say.flash { background: var(--surface-2); color: var(--gold); }
-  .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
   .board-wrap { position: relative; flex: 1 1 auto; min-height: 0; background: var(--bg); overflow: hidden; }
   .board-wrap.zoom { overflow: auto; }
   svg.board { width: 100%; height: 100%; display: block; }
@@ -90,17 +90,51 @@
   }
   @keyframes pulse { 50% { opacity: .45 } }
   @media (prefers-reduced-motion: no-preference) { .hint { animation: pulse 1.5s ease-in-out infinite; } }
+  .mark { display: grid; place-items: center; width: 36px; height: 36px; flex: none; }
+  .mark img { width: 32px; height: 32px; object-fit: contain; }
+  .iconbtn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); }
+  .cards { background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px; max-height: 46vh; overflow: auto; }
+  .cards-row { display: flex; gap: 8px; margin-top: 8px; }
+  .gcard { width: 132px; flex: none; padding: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--gold); background: #07090c; text-align: left; }
+  .gcard img { width: 100%; height: 168px; object-fit: cover; display: block; }
+  .gcard span { display: block; padding: 6px 8px 8px; }
+  .shell { position: fixed; inset: 0; z-index: 30; background: rgba(7,9,12,.94); overflow: auto; padding: 16px 14px 28px; }
+  .shell-inner { width: min(560px, 100%); margin: 0 auto; }
+  .shell h2 { font-family: Oswald, sans-serif; font-size: 40px; margin: 8px 0; letter-spacing: 0.04em; }
+  .menu-actions, .stack { display: grid; gap: 8px; }
+  .menu-actions button, .stack button, .wide { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); text-align: left; padding: 8px 12px; }
+  .menu-actions .go { text-align: center; }
+  .soon { color: var(--gold); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .socials { display: flex; gap: 8px; }
+  .socials button { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); }
+  .slot { display: flex; justify-content: space-between; gap: 8px; align-items: center; background: var(--bg); border-radius: 12px; padding: 8px; }
+  video.trailer { width: 100%; border-radius: 12px; background: #000; }
+  @media (max-width: 959px) {
+    #zoomBtn, #helpBtn { display: none; }
+    .cards { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; max-height: 42vh; }
+  }
+  @media (min-width: 960px) {
+    .cards { max-height: none; width: 168px; border-bottom: 0; border-right: 1px solid var(--line); }
+    .cards-row { flex-direction: column; }
+    .gcard { width: 100%; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <div class="top">
+      <a class="mark" href="https://futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/futuret3ch-mark.png" alt="Futuret3Ch"></a>
+      <a class="mark" href="https://t3x.futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/t3x-badge.png" alt="T3X"></a>
       <div>
         <h1>T3X DOMINION</h1>
         <div class="sub" id="turnline">Turn 1 · Futuret3Ch</div>
       </div>
       <div class="tools">
+        <button class="iconbtn" id="pauseBtn" type="button" aria-label="Pause">II</button>
+        <button class="iconbtn" id="muteBtn" type="button" aria-label="Mute">♪</button>
+        <button class="ghost" id="menuBtn" type="button">Menu</button>
+        <button class="ghost" id="cardsBtn" type="button">Cards</button>
         <button class="ghost" id="zoomBtn" type="button">Bigger</button>
         <button class="ghost" id="helpBtn" type="button">How to play</button>
       </div>
@@ -121,6 +155,10 @@
     <p class="say" id="say"></p>
   </header>
   <div class="stage">
+    <aside class="cards" id="cards" hidden>
+      <div class="row"><b>Cards</b><button class="ghost" id="cardsClose" type="button">Close</button></div>
+      <div class="cards-row" id="cardRow"></div>
+    </aside>
     <div class="board-wrap" id="boardWrap">
       <svg class="board" id="board" role="group" aria-label="Hex grid. You are at the bottom. The enemy is at the top."></svg>
       <div class="banner" id="banner" hidden>Enemy turn — watch</div>
@@ -203,8 +241,11 @@ function create() {
   place("p-def", "defender", "player", 1, 3);
   place("e-atk", "attacker", "enemy", 0, -3);
   place("e-def", "defender", "enemy", -1, -3);
-  S = { tiles, units, turn: 1, phase: "briefing", energy: { player: 55, enemy: 12 }, data: { player: 10, enemy: 6 }, selectedId: "p-scout", buildKind: null, inspect: key(0, 3), log: ["You start at the bottom (teal). The enemy starts at the top (crimson)."], flash: null, taught: false, script: [], scriptIndex: 0, winner: null, winReason: "", seq: 10, attention: null };
+  S = { tiles, units, turn: 1, phase: "briefing", energy: { player: 55, enemy: 12 }, data: { player: 10, enemy: 6 }, selectedId: "p-scout", buildKind: null, inspect: key(0, 3), log: ["You start at the bottom (teal). The enemy starts at the top (crimson)."], flash: null, taught: false, script: [], scriptIndex: 0, winner: null, winReason: "", seq: 10, attention: null, hotseat: false, control: "player" };
 }
+function actor() { return S.hotseat ? (S.control || "player") : "player"; }
+function foe() { return actor() === "player" ? "enemy" : "player"; }
+function ping(kind) { if (window.sfx) window.sfx(kind); }
 
 function counts() {
   const tiles = Object.values(S.tiles);
@@ -233,15 +274,15 @@ function reachable(unit) {
 }
 function hints() {
   const moves = [], attacks = [], threat = [], build = [];
-  if (S.phase === "play" && S.buildKind) for (const t of Object.values(S.tiles)) if (t.owner === "player" && !t.unitId) build.push(key(t.q, t.r));
+  if (S.phase === "play" && S.buildKind) for (const t of Object.values(S.tiles)) if (t.owner === actor() && !t.unitId) build.push(key(t.q, t.r));
   const unit = S.selectedId && S.units[S.selectedId];
   if (unit && (S.phase === "play" || S.phase === "briefing")) {
     const st = STATS[unit.kind];
-    if (unit.side === "player" && !unit.acted && !S.buildKind) {
+    if (unit.side === actor() && !unit.acted && !S.buildKind) {
       reachable(unit).forEach(p => moves.push(key(p.q, p.r)));
-      Object.values(S.units).forEach(o => { if (o.side === "enemy" && dist(unit, o) <= st.range) attacks.push(key(o.q, o.r)); });
+      Object.values(S.units).forEach(o => { if (o.side === foe() && dist(unit, o) <= st.range) attacks.push(key(o.q, o.r)); });
     }
-    if (unit.side === "enemy") Object.values(S.tiles).forEach(t => { const d = dist(unit, t); if (d > 0 && d <= st.range) threat.push(key(t.q, t.r)); });
+    if (unit.side !== actor()) Object.values(S.tiles).forEach(t => { const d = dist(unit, t); if (d > 0 && d <= st.range) threat.push(key(t.q, t.r)); });
   }
   return { moves: new Set(moves), attacks: new Set(attacks), threat: new Set(threat), build: new Set(build) };
 }
@@ -361,6 +402,7 @@ function describe(tile) {
   return "Open ground. Nobody is paid for it until a unit steps here." + relay;
 }
 function instruction() {
+  if (S.phase === "handoff") return "Pass the phone. " + (actor() === "enemy" ? "Crimson plays from the top." : "Teal plays from the bottom.") + " Tap Ready.";
   if (S.phase === "briefing") return "The map behind this card is the real board. Teal at the bottom is you.";
   if (S.phase === "end") return S.winReason;
   if (S.phase === "enemy") return S.script.length ? "Enemy turn — watch the map. You can't give orders until they finish." : "The enemy holds position. Collecting pay next…";
@@ -388,28 +430,31 @@ function clickHex(q, r) {
   const tile = S.tiles[key(q, r)]; if (!tile) return;
   S.inspect = key(q, r);
   if (S.buildKind) {
-    if (tile.unitId && S.units[tile.unitId] && S.units[tile.unitId].side === "player") { S.selectedId = tile.unitId; S.buildKind = null; draw(); return; }
+    if (tile.unitId && S.units[tile.unitId] && S.units[tile.unitId].side === actor()) { S.selectedId = tile.unitId; S.buildKind = null; draw(); return; }
     const st = STATS[S.buildKind];
-    if (S.energy.player < st.cost) { flash(st.name + " costs " + st.cost + " Energy. You have " + S.energy.player + ". Ending the turn pays you " + income("player").energy + "."); draw(); return; }
-    if (tile.owner !== "player") { flash("You can only deploy on your own teal hexes. Step onto this one first, then build."); draw(); return; }
-    if (tile.unitId) { flash("A unit is already standing there. Pick an empty teal hex."); draw(); return; }
+    const side = actor();
+    if (S.energy[side] < st.cost) { flash(st.name + " costs " + st.cost + " Energy. You have " + S.energy[side] + "."); draw(); return; }
+    if (tile.owner !== side) { flash("Deploy only on land this side already holds."); draw(); return; }
+    if (tile.unitId) { flash("A unit is already standing there. Pick an empty hex."); draw(); return; }
     const id = "u" + (++S.seq);
-    S.units[id] = { id, kind: S.buildKind, side: "player", q, r, hp: st.hp, acted: false };
-    S.energy.player -= st.cost; tile.unitId = id; S.selectedId = id; S.buildKind = null; S.attention = key(q, r);
-    log("Deployed a " + st.name + ". It can still act this turn. Energy left: " + S.energy.player + ".");
+    S.units[id] = { id, kind: S.buildKind, side, q, r, hp: st.hp, acted: false };
+    S.energy[side] -= st.cost; tile.unitId = id; S.selectedId = id; S.buildKind = null; S.attention = key(q, r);
+    log("Deployed a " + st.name + ". It can still act this turn. Energy left: " + S.energy[side] + ".");
+    ping("ui");
     draw(); return;
   }
   const selected = S.selectedId && S.units[S.selectedId];
-  if (selected && selected.side === "player" && !selected.acted) {
+  const side = actor();
+  if (selected && selected.side === side && !selected.acted) {
     const occ = tile.unitId && S.units[tile.unitId];
-    if (occ && occ.side === "enemy") {
-      if (dist(selected, occ) <= STATS[selected.kind].range) { apply({ kind: "attack", unitId: selected.id, targetId: occ.id }); S.taught = true; endIfWon(); draw(); return; }
-      flash("Too far. " + STATS[selected.kind].name + " only hits " + STATS[selected.kind].range + " hex" + (STATS[selected.kind].range > 1 ? "es" : "") + " away. Move closer — or use Artillery, which hits 2.");
+    if (occ && occ.side === foe()) {
+      if (dist(selected, occ) <= STATS[selected.kind].range) { apply({ kind: "attack", unitId: selected.id, targetId: occ.id }); ping("hit"); S.taught = true; endIfWon(); draw(); return; }
+      flash("Too far. " + STATS[selected.kind].name + " only hits " + STATS[selected.kind].range + " hex" + (STATS[selected.kind].range > 1 ? "es" : "") + " away.");
       draw(); return;
     }
-    if (occ && occ.side === "player") { S.selectedId = occ.id; draw(); return; }
-    if (reachable(selected).some(p => p.q === q && p.r === r)) { apply({ kind: "move", unitId: selected.id, q, r }); S.taught = true; endIfWon(); draw(); return; }
-    flash(STATS[selected.kind].name + " can't reach that. It walks " + STATS[selected.kind].move + " hex" + (STATS[selected.kind].move > 1 ? "es" : "") + ", and only the bright hexes are legal.");
+    if (occ && occ.side === side) { S.selectedId = occ.id; draw(); return; }
+    if (reachable(selected).some(p => p.q === q && p.r === r)) { apply({ kind: "move", unitId: selected.id, q, r }); ping("move"); S.taught = true; endIfWon(); draw(); return; }
+    flash(STATS[selected.kind].name + " can't reach that. Only the bright hexes are legal.");
     draw(); return;
   }
   if (tile.unitId) { S.selectedId = tile.unitId; draw(); return; }
@@ -419,27 +464,45 @@ function build(kind) {
   if (S.phase === "briefing") { flash("Press Start on the brief first. You are the teal at the bottom."); draw(); return; }
   if (S.phase !== "play") return;
   if (S.buildKind === kind) { S.buildKind = null; draw(); return; }
+  const side = actor();
   const st = STATS[kind];
-  if (S.energy.player < st.cost) { flash(st.name + " costs " + st.cost + " Energy. You have " + S.energy.player + ". End the turn to collect " + income("player").energy + "."); draw(); return; }
-  if (!Object.values(S.tiles).some(t => t.owner === "player" && !t.unitId)) { flash("No empty teal hex. Move a unit off your land, or capture a new hex first."); draw(); return; }
+  if (S.energy[side] < st.cost) { flash(st.name + " costs " + st.cost + " Energy. You have " + S.energy[side] + "."); draw(); return; }
+  if (!Object.values(S.tiles).some(t => t.owner === side && !t.unitId)) { flash("No empty hex on this side. Move a unit, or capture land first."); draw(); return; }
   S.buildKind = kind; S.selectedId = null; draw();
 }
 function repair() {
   if (S.phase !== "play") return;
   const unit = S.selectedId && S.units[S.selectedId];
-  if (!unit || unit.side !== "player") { flash("Select one of your damaged units first."); draw(); return; }
+  const side = actor();
+  if (!unit || unit.side !== side) { flash("Select one of this side's damaged units first."); draw(); return; }
   if (unit.acted) { flash("That unit already acted. Repair uses its action."); draw(); return; }
   if (unit.hp >= STATS[unit.kind].hp) { flash("Already at full health."); draw(); return; }
-  if (S.data.player < REPAIR_COST) { flash("Repair costs " + REPAIR_COST + " Data. You have " + S.data.player + "."); draw(); return; }
+  if (S.data[side] < REPAIR_COST) { flash("Repair costs " + REPAIR_COST + " Data. You have " + S.data[side] + "."); draw(); return; }
   const hp = Math.min(STATS[unit.kind].hp, unit.hp + REPAIR_HEAL);
-  const gained = hp - unit.hp;
-  unit.hp = hp; unit.acted = true; S.data.player -= REPAIR_COST; S.attention = key(unit.q, unit.r);
-  log("Repaired " + STATS[unit.kind].name + " to " + hp + " health. Data left: " + S.data.player + ".");
+  unit.hp = hp; unit.acted = true; S.data[side] -= REPAIR_COST; S.attention = key(unit.q, unit.r);
+  log("Repaired " + STATS[unit.kind].name + " to " + hp + " health. Data left: " + S.data[side] + ".");
+  ping("ui");
   draw();
 }
 function endTurn() {
   if (S.phase !== "play") return;
   endIfWon(); if (S.phase === "end") { draw(); return; }
+  if (S.hotseat) {
+    const side = actor();
+    const pay = income(side);
+    S.energy[side] += pay.energy;
+    S.data[side] += pay.data;
+    S.control = foe();
+    Object.values(S.units).forEach(u => { u.acted = false; });
+    if (S.control === "player") S.turn++;
+    S.phase = "handoff";
+    S.buildKind = null;
+    S.selectedId = null;
+    log((side === "player" ? "Teal" : "Crimson") + " collected " + pay.energy + " Energy. Pass the phone.");
+    ping("ui");
+    draw();
+    return;
+  }
   S.phase = "enemy"; S.buildKind = null; S.script = scriptEnemy(); S.scriptIndex = 0; draw();
   clearTimeout(enemyTimer); enemyTimer = setTimeout(advance, 820);
 }
@@ -523,7 +586,7 @@ function readout() {
   el.textContent = tile ? describe(tile) : "Tap the map. Units, empty land, and relays all explain themselves.";
 }
 function draw() {
-  const c = counts(), pay = income("player"), mine = Object.values(S.units).filter(u => u.side === "player"), ready = mine.filter(u => !u.acted).length;
+  const c = counts(), who = actor(), pay = income(who), mine = Object.values(S.units).filter(u => u.side === who), ready = mine.filter(u => !u.acted).length;
   document.getElementById("turnline").textContent = "Turn " + S.turn + " · Futuret3Ch";
   document.getElementById("youScore").textContent = "You " + c.player + " / " + c.goal;
   document.getElementById("themScore").textContent = "Enemy " + c.enemy + " / " + c.goal;
@@ -532,8 +595,8 @@ function draw() {
   const say = document.getElementById("say");
   say.textContent = S.flash || instruction();
   say.className = "say" + (S.flash ? " flash" : "");
-  document.getElementById("energy").textContent = S.energy.player;
-  document.getElementById("data").textContent = S.data.player;
+  document.getElementById("energy").textContent = S.energy[who];
+  document.getElementById("data").textContent = S.data[who];
   document.getElementById("energyNext").textContent = "+" + pay.energy + " at end of turn";
   document.getElementById("dataNext").textContent = "+" + pay.data + " at end of turn";
   document.getElementById("brief").hidden = S.phase !== "briefing";
@@ -543,6 +606,7 @@ function draw() {
   end.disabled = S.phase !== "play";
   if (S.phase === "briefing") { title.textContent = "Waiting to start"; sub.textContent = "Press Start. You are teal, at the bottom."; }
   else if (S.phase === "end") { title.textContent = S.winner === "player" ? "You hold the grid" : "Operation over"; sub.textContent = S.winReason; end.disabled = false; end.onclick = () => { create(); draw(); }; }
+  else if (S.phase === "handoff") { title.textContent = "Ready"; sub.textContent = (who === "enemy" ? "Crimson" : "Teal") + " has the phone. Tap Ready to play."; end.disabled = false; end.onclick = () => { S.phase = "play"; draw(); }; }
   else if (S.phase === "enemy") { title.textContent = "Enemy is moving"; sub.textContent = "Your orders resume after they finish."; end.onclick = endTurn; }
   else { title.textContent = "End turn"; sub.textContent = ready ? ready + " unit" + (ready > 1 ? "s" : "") + " can still act. Then you collect " + pay.energy + " Energy." : "Collect " + pay.energy + " Energy and " + pay.data + " Data."; end.onclick = endTurn; }
   const builds = document.getElementById("builds"); builds.replaceChildren();
@@ -573,7 +637,9 @@ document.getElementById("zoomBtn").onclick = () => {
   document.getElementById("zoomBtn").textContent = w.classList.contains("zoom") ? "See all" : "Bigger";
 };
 addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null; S.selectedId = null; draw(); } if (e.key === "Enter" && S.phase === "play") endTurn(); });
+window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, counts, STATS, KINDS };
 create(); draw();
 </script>
+<script src="shell.js"></script>
 </body>
 </html>
