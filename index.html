@@ -30,6 +30,8 @@
   .sub { color: var(--muted); font-size: 13px; }
   .tools { margin-left: auto; display: flex; gap: 8px; }
   .ghost { min-height: 44px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); padding: 0 12px; }
+  .reqbtn { width: 96px; height: 36px; padding: 0; border: 1px solid #e6c56a; border-radius: 999px; overflow: hidden; background: #10161c; flex: none; }
+  .reqbtn img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
   .x { width: 36px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 999px; background: #e23b3b; color: #fff; display: grid; place-items: center; flex: none; }
   .x svg { display: block; }
   .scores { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-top: 8px; }
@@ -838,7 +840,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=pick"></script>
+<script src="decks.js?v=req"></script>
 <script src="shell.js?v=x"></script>
 </body>
 </html>

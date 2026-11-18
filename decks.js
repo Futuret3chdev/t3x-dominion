@@ -1046,7 +1046,8 @@
     head.className = "row";
     head.innerHTML = "<b>" + (kind === "power" ? "Power deck" : "Unit deck") + "</b>";
     const req = document.createElement("button");
-    req.className = "ghost"; req.type = "button"; req.textContent = "Requests";
+    req.className = "reqbtn"; req.type = "button"; req.setAttribute("aria-label", "Requests");
+    req.innerHTML = '<img alt="" src="media/icon-requests.jpg">';
     const close = document.createElement("button");
     close.className = "x"; close.type = "button"; close.setAttribute("aria-label", "Close");
     close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
