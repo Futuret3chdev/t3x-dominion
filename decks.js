@@ -371,7 +371,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard " + tier;
-        card.innerHTML = shopFace("media/card-" + row[0] + ".jpg", "media/vid-" + row[0] + ".mp4") + '<div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + "</div></div>";
+        card.innerHTML = '<img alt="" src="media/card-' + row[0] + '.jpg"><div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + "</div></div>";
         card.onclick = function () { shopPick = { kind: "unit", id: row[0] }; redraw(); };
         grid.appendChild(card);
       });
@@ -383,7 +383,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = shopFace("media/card-" + c.id + ".jpg", "media/vid-" + c.id + ".mp4") + '<div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
+        card.innerHTML = '<img alt="" src="media/card-' + c.id + '.jpg"><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
         card.onclick = function () { shopPick = { kind: "card", id: c.id }; redraw(); };
         grid.appendChild(card);
       });
@@ -403,7 +403,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = shopFace("media/card-" + drop[0] + ".jpg", "media/vid-" + drop[0] + ".mp4") + '<div class="cap"><b>' + drop[1] + '</b><div class="price">NFT · Soon</div></div>';
+        card.innerHTML = '<img alt="" src="media/card-' + drop[0] + '.jpg"><div class="cap"><b>' + drop[1] + '</b><div class="price">NFT · Soon</div></div>';
         card.onclick = function () { shopPick = { kind: "nft", id: drop[0] }; redraw(); };
         grid.appendChild(card);
       });
@@ -415,13 +415,12 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard rare";
-        card.innerHTML = shopFace("media/card-supply-" + g[0] + ".jpg", "media/vid-supply-" + g[0] + ".mp4") + '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
+        card.innerHTML = '<img alt="" src="media/card-supply-' + g[0] + '.jpg"><div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
         card.onclick = function () { shopPick = { kind: "supply", id: g[0] }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
     }
-    playFaces(root);
   }
   function paintShopPick(root, redraw) {
     const back = document.createElement("button");
