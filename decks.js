@@ -375,6 +375,15 @@
   }
 
   let openKind = "power";
+  let deckList = [];
+  function stepCard(dir) {
+    if (!deckList.length) return;
+    const box = document.getElementById("cardDetail");
+    const id = box && box.dataset.id;
+    let i = deckList.findIndex(c => c.id === id);
+    if (i < 0) i = 0;
+    showDetail(deckList[(i + dir + deckList.length) % deckList.length]);
+  }
   function countOf(id) { return (meta().cards[id] || 0); }
   function unitCount(kind) {
     if (!Game.S) return 0;
@@ -416,14 +425,14 @@
     const S = Game.S;
     const m = meta();
     const cards = [
-      { id: "energy", name: "Energy", art: "media/card-energy.jpg", video: "media/vid-energy.mp4", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
-      { id: "data", name: "Data", art: "media/card-data.jpg", video: "media/vid-data.mp4", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
+      { id: "energy", name: "Energy", art: "media/card-energy.jpg", video: "media/gif-energy.gif", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
+      { id: "data", name: "Data", art: "media/card-data.jpg", video: "media/gif-data.gif", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
     ];
     const clips = ["ration", "scrap", "relay", "oil", "barrel", "map", "cloth", "coal", "flare", "medic", "pin", "coin"];
     utilities.forEach((u, i) => {
       const owned = i < m.utilities;
       const n = m.cards[u[0]] || 0;
-      cards.push({ id: u[0], name: u[1], art: "media/card-" + clips[i] + ".jpg", video: "media/vid-" + clips[i] + ".mp4", kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
+      cards.push({ id: u[0], name: u[1], art: "media/card-" + clips[i] + ".jpg", video: "media/gif-" + clips[i] + ".gif", kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
     });
     cards.sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
     return cards;
@@ -434,7 +443,7 @@
       const st = Object.assign({ kind: k }, Game.STATS[k]);
       const n = unitCount(k);
       const ready = S.energy.player >= st.cost && S.phase === "play";
-      return { id: k, name: st.name, art: "media/card-" + k + ".jpg", video: "media/vid-" + k + ".mp4", kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
+      return { id: k, name: st.name, art: "media/card-" + k + ".jpg", video: "media/gif-" + k + ".gif", kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
     }).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
   }
   function friendNames() {
@@ -526,17 +535,28 @@
     box.hidden = false;
     box.innerHTML = "";
     if (card.video) {
-      const v = document.createElement("video");
-      v.className = "cardvid";
-      v.src = card.video;
-      v.playsInline = true;
-      v.controls = true;
-      v.autoplay = true;
-      v.loop = true;
-      box.appendChild(v);
-      const pending = v.play();
-      if (pending) pending.catch(function () {});
+      const stage = document.createElement("div");
+      stage.className = "gifstage";
+      const img = document.createElement("img");
+      img.className = "cardgif";
+      img.alt = "";
+      img.src = card.video;
+      const prev = document.createElement("button");
+      prev.type = "button"; prev.className = "gifnav prev"; prev.setAttribute("aria-label", "Previous card"); prev.textContent = "‹";
+      const next = document.createElement("button");
+      next.type = "button"; next.className = "gifnav next"; next.setAttribute("aria-label", "Next card"); next.textContent = "›";
+      prev.onclick = function (e) { e.stopPropagation(); stepCard(-1); };
+      next.onclick = function (e) { e.stopPropagation(); stepCard(1); };
+      let startX = 0;
+      stage.addEventListener("touchstart", function (e) { startX = e.changedTouches[0].clientX; }, { passive: true });
+      stage.addEventListener("touchend", function (e) {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 36) stepCard(dx < 0 ? 1 : -1);
+      }, { passive: true });
+      stage.appendChild(img); stage.appendChild(prev); stage.appendChild(next);
+      box.appendChild(stage);
     }
+    box.dataset.id = card.id;
     const h = document.createElement("b");
     h.textContent = card.name;
     const p = document.createElement("p");
@@ -642,6 +662,7 @@
     const grid = document.createElement("div");
     grid.className = "casgrid";
     const cards = kind === "power" ? powerCards() : unitCards();
+    deckList = cards;
     cards.forEach((card, i) => {
       const b = document.createElement("button");
       b.type = "button";
