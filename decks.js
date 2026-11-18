@@ -416,17 +416,14 @@
     const S = Game.S;
     const m = meta();
     const cards = [
-      { id: "energy", name: "Energy", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
-      { id: "data", name: "Data", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
+      { id: "energy", name: "Energy", art: "media/card-energy.jpg", video: "media/vid-energy.mp4", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
+      { id: "data", name: "Data", art: "media/card-data.jpg", video: "media/vid-data.mp4", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
     ];
+    const clips = ["ration", "scrap", "relay", "oil", "barrel", "map", "cloth", "coal", "flare", "medic", "pin", "coin"];
     utilities.forEach((u, i) => {
       const owned = i < m.utilities;
       const n = m.cards[u[0]] || 0;
-      cards.push({ id: u[0], name: u[1], kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
-    });
-    allCards().forEach(c => {
-      const n = m.cards[c.id] || 0;
-      cards.push({ id: c.id, name: c.name, kicker: c.collection, countLabel: n ? "Hold " + n : "Need", ready: n > 0, gold: c.gold, explain: c.line + " Part of " + c.collection + " in " + c.deck + "." + (c.gold ? " Gold. Earn it with a mission, or buy it for 10 T3X." : " Buy a copy for 3 T3X, or salvage it in battle."), stats: [["You hold", n], ["Deck", c.deck], ["Collection", c.collection], ["Prize", c.prize], ["Kind", c.gold ? "Gold" : "Normal"]], use: () => "Collection cards are kept, sent, or finished as a set. They are not spent on the map." });
+      cards.push({ id: u[0], name: u[1], art: "media/card-" + clips[i] + ".jpg", video: "media/vid-" + clips[i] + ".mp4", kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
     });
     cards.sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
     return cards;
@@ -437,7 +434,7 @@
       const st = Object.assign({ kind: k }, Game.STATS[k]);
       const n = unitCount(k);
       const ready = S.energy.player >= st.cost && S.phase === "play";
-      return { id: k, name: st.name, kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
+      return { id: k, name: st.name, art: "media/card-" + k + ".jpg", video: "media/vid-" + k + ".mp4", kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
     }).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
   }
   function friendNames() {
@@ -528,6 +525,18 @@
     if (!box) return;
     box.hidden = false;
     box.innerHTML = "";
+    if (card.video) {
+      const v = document.createElement("video");
+      v.className = "cardvid";
+      v.src = card.video;
+      v.playsInline = true;
+      v.controls = true;
+      v.autoplay = true;
+      v.loop = true;
+      box.appendChild(v);
+      const pending = v.play();
+      if (pending) pending.catch(function () {});
+    }
     const h = document.createElement("b");
     h.textContent = card.name;
     const p = document.createElement("p");
@@ -638,7 +647,7 @@
       b.type = "button";
       b.className = "ccard fall" + (card.ready ? "" : " locked") + (card.gold ? " gold" : "");
       b.style.setProperty("--i", String(Math.min(i, 14)));
-      b.innerHTML = "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>";
+      b.innerHTML = (card.art ? '<img alt="" src="' + card.art + '">' : "") + "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>";
       b.onclick = () => showDetail(card);
       grid.appendChild(b);
     });
@@ -655,6 +664,15 @@
     stampMissions();
   };
   window.Collections = { mount: mount };
-  window.DominionCards = { onCapture: onCapture, onWin: onWin };
+  window.DominionCards = {
+    onCapture: onCapture,
+    onWin: onWin,
+    open: function (id) {
+      const unit = unitCards().find(c => c.id === id);
+      openCascade(unit ? "units" : "power");
+      const card = (unit ? unitCards() : powerCards()).find(c => c.id === id);
+      if (card) showDetail(card);
+    }
+  };
   meta();
 })();
