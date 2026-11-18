@@ -424,7 +424,7 @@
       const st = Game.STATS[row[0]];
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<img alt="" src="media/card-' + row[0] + '.jpg"><h3>' + row[1] + '</h3><p class="price">' + row[2] + ' T3X</p><p>' + shopFx[row[0]] + '</p><p class="muted">Field cost ' + st.cost + ' Energy. Health ' + st.hp + '. Hit ' + st.atk + '. Walks ' + st.move + '. Range ' + st.range + '.</p>';
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + row[0] + '.jpg"><source src="media/vid-' + row[0] + '.mp4?v=move" type="video/mp4"></video><h3>' + row[1] + '</h3><p class="price">' + row[2] + ' T3X</p><p>' + shopFx[row[0]] + '</p><p class="muted">Field cost ' + st.cost + ' Energy. Health ' + st.hp + '. Hit ' + st.atk + '. Walks ' + st.move + '. Range ' + st.range + '.</p>';
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -466,7 +466,7 @@
       const drop = nftDrops.find(function (d) { return d[0] === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<img alt="" src="media/card-' + drop[0] + '.jpg"><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + drop[0] + '.jpg"><source src="media/vid-' + drop[0] + '.mp4?v=move" type="video/mp4"></video><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
       root.appendChild(panel);
     } else {
       const goods = { energy: ["Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], data: ["Data cache", 20, "16 Data for repairs."], land: ["Hex brand", 40, "One open hex becomes yours, if a battle is open."] };
@@ -498,7 +498,14 @@
       root.appendChild(buyBtn);
     }
     const clip = root.querySelector(".shopanim");
-    if (clip) { const started = clip.play(); if (started && started.catch) started.catch(function () {}); }
+    if (clip) {
+      clip.muted = true;
+      clip.defaultMuted = true;
+      clip.setAttribute("muted", "");
+      clip.playsInline = true;
+      const started = clip.play();
+      if (started && started.catch) started.catch(function () { clip.muted = true; clip.play(); });
+    }
     root.appendChild(note);
   }
 
