@@ -411,9 +411,10 @@
   const pop = document.getElementById("cogPop");
   cog.onclick = (e) => {
     e.stopPropagation();
-    pop.hidden = !pop.hidden;
-    cog.classList.toggle("open", !pop.hidden);
-    cog.setAttribute("aria-expanded", String(!pop.hidden));
+    pop.hidden = true;
+    cog.classList.remove("open");
+    cog.setAttribute("aria-expanded", "false");
+    openShell("home");
   };
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".cogwrap")) { pop.hidden = true; cog.classList.remove("open"); cog.setAttribute("aria-expanded", "false"); }
