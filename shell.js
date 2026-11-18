@@ -194,6 +194,74 @@
     return '<button class="tile ' + (extra || "") + '" type="button" data-go="' + go + '" aria-label="' + label + '"><span class="ticon">' + icons[icon] + '</span><span class="tlabel">' + label + '</span></button>';
   }
 
+  function walletSession() {
+    try { return JSON.parse(localStorage.getItem("dominion-wallet") || "null"); }
+    catch (e) { return null; }
+  }
+  function walletProvider(id) {
+    const w = window;
+    if (id === "phantom") return (w.phantom && w.phantom.solana) || (w.solana && w.solana.isPhantom ? w.solana : null);
+    if (id === "solflare") return w.solflare || (w.solana && w.solana.isSolflare ? w.solana : null);
+    if (id === "backpack") return (w.backpack && (w.backpack.solana || w.backpack)) || (w.solana && w.solana.isBackpack ? w.solana : null);
+    return null;
+  }
+  function paintWallet(box) {
+    if (!box) return;
+    box.innerHTML = "";
+    const note = document.createElement("p");
+    note.className = "muted";
+    const session = walletSession();
+    if (session && session.address) {
+      const who = document.createElement("p");
+      who.innerHTML = "<b>" + session.name + "</b> · " + session.address.slice(0, 4) + "…" + session.address.slice(-4);
+      const off = document.createElement("button");
+      off.type = "button";
+      off.textContent = "Disconnect";
+      off.onclick = () => { localStorage.removeItem("dominion-wallet"); render("community"); };
+      box.appendChild(who);
+      box.appendChild(off);
+    } else {
+      [["phantom", "Phantom"], ["solflare", "Solflare"], ["backpack", "Backpack"]].forEach(([id, label]) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = label;
+        b.onclick = async () => {
+          const provider = walletProvider(id);
+          if (!provider) {
+            const here = encodeURIComponent(location.href);
+            const open = {
+              phantom: "https://phantom.app/ul/browse/" + here + "?ref=" + here,
+              solflare: "https://solflare.com/ul/v1/browse/" + here + "?ref=" + here,
+              backpack: "https://backpack.app/ul/v1/browse/" + here + "?ref=" + here
+            };
+            window.open(open[id], "_blank", "noopener");
+            note.textContent = "That wallet is not in this browser. It was opened so you can connect, then come back.";
+            return;
+          }
+          try {
+            const res = await provider.connect();
+            const key = (res && res.publicKey) || provider.publicKey;
+            const address = key && key.toString ? key.toString() : "";
+            if (!address) throw new Error("no address");
+            localStorage.setItem("dominion-wallet", JSON.stringify({ name: label, address: address }));
+            render("community");
+          } catch (e) {
+            note.textContent = "The wallet did not connect. Try again, or open T3X Vault.";
+          }
+        };
+        box.appendChild(b);
+      });
+    }
+    const vault = document.createElement("a");
+    vault.className = "wide";
+    vault.href = "https://t3x-wallet.vercel.app/";
+    vault.target = "_blank";
+    vault.rel = "noreferrer";
+    vault.textContent = "T3X Vault";
+    box.appendChild(vault);
+    box.appendChild(note);
+  }
+
   function render(screen) {
     const body = document.getElementById("shellBody");
     const saves = readSaves();
@@ -246,8 +314,8 @@
         + '<div class="socials"><button type="button" aria-label="X">' + icons.x + '</button><button type="button" aria-label="Facebook">' + icons.fb + '</button><button type="button" aria-label="Instagram">' + icons.ig + '</button></div>'
         + '<p class="soon">Follow links coming soon.</p>'
         + '<button class="wide" type="button" id="reserve">' + (meta.freeUsed ? "Free Scout already used" : meta.freeScout ? "Free Scout reserved" : "Reserve free Scout") + '</button>'
-        + '<h3>T3X Vault</h3><p class="muted">One vault. Connect is coming soon. Every wallet will be accepted — Futuret3Ch is standing up its own chain, with bridging.</p>'
-        + '<a class="wide" href="https://t3x-wallet.vercel.app/" target="_blank" rel="noreferrer">T3X Vault</a>'
+        + '<h3>T3X Vault</h3><p class="muted">Choose Phantom, Solflare, or Backpack, or open T3X Vault. Every wallet will be accepted. Futuret3Ch is standing up its own chain, with bridging.</p>'
+        + '<div class="stack" id="walletBox"></div>'
         + '<h3>Collections</h3><div id="colRoot"></div>'
         + '<h3>My friends</h3><p class="muted">Names stay on this device. Invites are coming soon.</p>'
         + '<div class="row"><input id="friendName" placeholder="Name" style="flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 10px"><button type="button" id="addFriend">Add</button></div>'
@@ -271,6 +339,7 @@
         list.appendChild(row);
       });
       if (window.Collections) Collections.mount(document.getElementById("colRoot"));
+      paintWallet(document.getElementById("walletBox"));
     } else if (screen === "updates") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
     } else if (screen === "cards") {
