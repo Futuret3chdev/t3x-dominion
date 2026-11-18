@@ -548,6 +548,8 @@
       document.body.appendChild(box);
     }
     box.hidden = false;
+    const sheet = document.getElementById("cascade");
+    if (sheet) sheet.hidden = true;
     box.innerHTML = "";
     box.dataset.id = card.id;
     const bar = document.createElement("div");
@@ -639,15 +641,22 @@
         });
       };
       askBtn.onclick = () => {
+        const names = friendNames().filter(name => name !== "Friend");
+        if (!names.length) {
+          const code = askCard(card.id, "Friend");
+          note.textContent = "Ask code: " + code + ". They add it under Friend requests.";
+          return;
+        }
         picks.hidden = false;
         picks.innerHTML = "";
-        friendNames().forEach(name => {
+        names.forEach(name => {
           const b = document.createElement("button");
           b.type = "button";
-          b.textContent = "Ask " + name;
+          b.textContent = name;
           b.onclick = () => {
             const code = askCard(card.id, name);
-            note.textContent = "Ask code for " + name + ": " + code + ". They add it under Friend requests.";
+            note.textContent = "Ask code for " + name + ": " + code;
+            picks.hidden = true;
           };
           picks.appendChild(b);
         });

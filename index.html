@@ -184,10 +184,11 @@
   .ccard img { width: 100%; height: 92px; object-fit: cover; border-radius: 8px; display: block; }
   .ccard b { font-size: 13px; line-height: 1.15; }
   .gifstage { position: relative; }
-  .viewer { position: fixed; inset: 0; z-index: 40; background: #07090c; display: flex; flex-direction: column; padding: 10px 12px 18px; }
+  .viewer { position: fixed; inset: 0; z-index: 40; background: #07090c; display: flex; flex-direction: column; padding: 10px 12px 18px; overflow: hidden; }
   .viewer[hidden] { display: none !important; }
-  .viewer .cardgif { width: auto; max-width: 100%; height: auto; max-height: 62vh; object-fit: contain; display: block; margin: 0 auto; }
-  .viewerest { overflow: auto; flex: 1; min-height: 0; }
+  .viewer .gifstage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  .viewer .cardgif { width: auto; max-width: 100%; height: auto; max-height: 100%; object-fit: contain; display: block; }
+  .viewerest { flex: 0 0 auto; overflow: hidden; }
   .gifnav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: rgba(7,9,12,.72); color: #fff; font-size: 22px; line-height: 1; }
   .gifnav.prev { left: 6px; }
   .gifnav.next { right: 6px; }
@@ -769,7 +770,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js"></script>
-<script src="shell.js"></script>
+<script src="decks.js?v=fit"></script>
+<script src="shell.js?v=fit"></script>
 </body>
 </html>
