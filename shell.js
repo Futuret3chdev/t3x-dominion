@@ -14,6 +14,35 @@
     catch (e) { return { friends: [], freeScout: false, freeUsed: false }; }
   }
   function saveMeta() { localStorage.setItem(META_KEY, JSON.stringify(meta)); }
+  const EARN_GOAL = 21 * 24 * 60 * 60 * 1000;
+  let earnStamp = Date.now();
+  function paintEarn() {
+    const pct = Math.min(100, ((meta.earnMs || 0) / EARN_GOAL) * 100);
+    document.querySelectorAll(".earnfill").forEach(el => { el.style.width = pct + "%"; });
+    const held = meta.t3xHeld || 0;
+    const label = (held ? held + " held · " : "") + pct.toFixed(1) + "%";
+    document.querySelectorAll(".earnread").forEach(el => { el.textContent = label; });
+  }
+  function accrueEarn() {
+    const now = Date.now();
+    const dt = Math.min(30000, Math.max(0, now - earnStamp));
+    earnStamp = now;
+    if (!document.hidden && dt > 0) {
+      meta.earnMs = (meta.earnMs || 0) + dt;
+      if (meta.earnMs >= EARN_GOAL) {
+        meta.earnMs -= EARN_GOAL;
+        meta.t3xHeld = (meta.t3xHeld || 0) + 1;
+        if (G && G.S) {
+          G.S.flash = "1 T3X earned. It stays on this device until the vault pays it.";
+          G.draw();
+        }
+      }
+      saveMeta();
+    }
+    paintEarn();
+  }
+  setInterval(accrueEarn, 5000);
+  paintEarn();
   function readSaves() {
     try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "[]"); }
     catch (e) { return []; }
@@ -161,7 +190,7 @@
     loop: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M7 7h9l-2-2m2 2l-2 2M17 17H8l2 2m-2-2l2-2"/></svg>'
   };
   function tile(go, label, icon, extra) {
-    return '<button class="tile ' + (extra || "") + '" type="button" data-go="' + go + '" aria-label="' + label + '">' + icons[icon] + '</button>';
+    return '<button class="tile ' + (extra || "") + '" type="button" data-go="' + go + '" aria-label="' + label + '"><span class="ticon">' + icons[icon] + '</span><span class="tlabel">' + label + '</span></button>';
   }
 
   function render(screen) {
@@ -184,10 +213,12 @@
         + tile("community", "Community", "hall")
         + tile("updates", "Updates", "spark")
         + tile("settings", "Settings", "cog")
-        + (G.S && G.S.phase !== "briefing" ? tile("back", "Back to battle", "back") : "")
-        + '</div><p class="menuhint" id="menuHint">Tap an icon</p>';
+        + (G.S && G.S.phase !== "briefing" ? tile("back", "Back", "back") : "")
+        + '</div><p class="menuhint" id="menuHint"></p>'
+        + '<div class="earn"><span>Earn 1 T3X</span><div class="earnbar"><i class="earnfill"></i></div><b class="earnread">0%</b></div>'
+        + '<p class="muted">Leave the game open. A full bar takes about three weeks. At 100% this device holds 1 T3X until the vault pays it.</p>';
     } else if (screen === "trailer") {
-      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">No watermark. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">Thirty seconds. No watermark. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4?v=30"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4?v=30" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
     } else if (screen === "saves") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Saves</h2><p class="muted">Three slots on this device. The newest replaces the oldest.</p><button class="wide" type="button" id="saveNow">Save this battle</button><div class="stack" id="slotList"></div>';
       const list = body.querySelector("#slotList");
