@@ -191,6 +191,25 @@
   .viewer .cardgif { width: auto; max-width: 100%; height: auto; max-height: 100%; object-fit: contain; display: block; }
   @keyframes drift { 50% { transform: scale(1.05); } }
   .drift { animation: drift 5s ease-in-out infinite; transform-origin: center; }
+  .shopbar { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 12px; }
+  .shopbar b { color: var(--gold); font-size: 22px; letter-spacing: .06em; }
+  .shopfilters { display: flex; gap: 8px; margin-bottom: 12px; }
+  .shopfilters button.on { border-color: var(--gold); color: var(--gold); }
+  .feature { position: relative; display: block; width: 100%; padding: 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--gold); background: #0c1218; text-align: left; margin-bottom: 12px; box-shadow: 0 0 24px rgba(212,175,55,.25); }
+  .feature img { width: 100%; height: 220px; object-fit: cover; display: block; }
+  .feature .cap, .shopcard .cap { padding: 8px 10px 10px; }
+  .shopgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .shopcard { position: relative; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: #0c1218; text-align: left; }
+  .shopcard img { width: 100%; height: 132px; object-fit: cover; display: block; }
+  .shopcard.rare { border-color: #7eb6ff; }
+  .shopcard.mythic, .feature { border-color: var(--gold); }
+  .shine { position: absolute; inset: 0 0 auto 0; height: 100%; background: linear-gradient(110deg, transparent 36%, rgba(255,255,255,.22) 50%, transparent 64%); transform: translateX(-120%); animation: shine 3.6s ease infinite; pointer-events: none; }
+  @keyframes shine { 55% { transform: translateX(120%); } 100% { transform: translateX(120%); } }
+  .forge { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; align-content: center; pointer-events: none; background: radial-gradient(circle, rgba(212,175,55,.42), rgba(7,9,12,.2) 55%, transparent 70%); animation: forge 1.35s ease forwards; }
+  .forge b { font-family: Oswald, sans-serif; font-size: 68px; letter-spacing: .18em; color: var(--gold); }
+  .forge span { color: #fff; letter-spacing: .08em; text-transform: uppercase; }
+  @keyframes forge { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .shine, .forge { animation: none; } }
   .gifnav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: rgba(7,9,12,.72); color: #fff; font-size: 22px; line-height: 1; }
   .gifnav.prev { left: 6px; }
   .gifnav.next { right: 6px; }
@@ -440,13 +459,16 @@ function apply(intent) {
   const st = STATS[unit.kind], yours = unit.side === "player", who = yours ? "Your" : "Enemy";
   if (intent.kind === "attack") {
     const target = S.units[intent.targetId]; if (!target) return;
-    unit.acted = true; const hp = target.hp - st.atk;
+    unit.acted = true;
+    let dmg = st.atk;
+    if (unit.burst) { dmg = st.atk * 2; unit.burst = false; }
+    const hp = target.hp - dmg;
     if (hp <= 0) {
       delete S.units[target.id]; S.tiles[key(target.q, target.r)].unitId = null; S.attention = key(target.q, target.r);
       log(who + " " + st.name + " destroyed " + (yours ? "their" : "your") + " " + STATS[target.kind].name + ". The hex is empty — step on it to take it.");
     } else {
       target.hp = hp; S.attention = key(target.q, target.r);
-      log(who + " " + st.name + " hit " + (yours ? "their" : "your") + " " + STATS[target.kind].name + " for " + st.atk + ". Health left: " + hp + ".");
+      log(who + " " + st.name + " hit " + (yours ? "their" : "your") + " " + STATS[target.kind].name + " for " + dmg + ". Health left: " + hp + ".");
     }
     return;
   }
@@ -566,9 +588,14 @@ function clickHex(q, r) {
     if (tile.owner !== side) { flash("Deploy only on land this side already holds."); draw(); return; }
     if (tile.unitId) { flash("A unit is already standing there. Pick an empty hex."); draw(); return; }
     const id = "u" + (++S.seq);
-    S.units[id] = { id, kind: S.buildKind, side, q, r, hp: st.hp, acted: false };
+    const placed = S.buildKind;
+    S.units[id] = { id, kind: placed, side, q, r, hp: st.hp, acted: false };
     S.energy[side] -= st.cost; tile.unitId = id; S.selectedId = id; S.buildKind = null; S.attention = key(q, r);
     log("Deployed a " + st.name + ". It can still act this turn. Energy left: " + S.energy[side] + ".");
+    if (window.DominionCards && DominionCards.onDeploy) {
+      const extra = DominionCards.onDeploy(placed);
+      if (extra) log(extra);
+    }
     ping("ui");
     draw(); return;
   }
@@ -776,7 +803,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=units"></script>
-<script src="shell.js?v=units"></script>
+<script src="decks.js?v=shop"></script>
+<script src="shell.js?v=shop"></script>
 </body>
 </html>

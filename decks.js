@@ -267,7 +267,160 @@
     m.t3xHeld -= cost;
     m.specials[id] = 1;
     save(m);
+    if (window.paintEarn) paintEarn();
     return row[1] + " is yours. Field it for " + row[3] + " Energy.";
+  }
+  const shopFx = {
+    ironwarden: "On the field: every other unit of yours gains 30 health.",
+    duskrider: "On the field: you gain 15 Energy at once.",
+    glasscannon: "The first shot hits for double, then the trick is spent.",
+    oathknight: "On the field: empty ground next to it becomes yours.",
+    siegesaint: "On the field: your whole line is healed 40.",
+    highgate: "On the field: every enemy unit takes 25.",
+    dreadbreaker: "On the field: you gain 50 Energy and 10 Data.",
+    accordender: "On the field: every enemy takes 40, and empty ground within 2 hexes is yours."
+  };
+  function hexDist(a, b) {
+    return Math.max(Math.abs(a.q - b.q), Math.abs(a.r - b.r), Math.abs((a.q + a.r) - (b.q + b.r)));
+  }
+  function onDeploy(kind) {
+    const S = Game.S;
+    if (!S || !shopFx[kind]) return "";
+    const mine = Object.values(S.units).filter(u => u.side === "player");
+    const foes = Object.values(S.units).filter(u => u.side === "enemy");
+    const placed = mine.filter(u => u.kind === kind).pop();
+    if (kind === "ironwarden") {
+      mine.forEach(u => { if (u !== placed) u.hp = Math.min(Game.STATS[u.kind].hp, u.hp + 30); });
+    } else if (kind === "duskrider") S.energy.player += 15;
+    else if (kind === "glasscannon" && placed) placed.burst = true;
+    else if (kind === "oathknight" && placed) {
+      Object.values(S.tiles).forEach(t => { if (hexDist(placed, t) === 1 && !t.unitId) t.owner = "player"; });
+    } else if (kind === "siegesaint") {
+      mine.forEach(u => { u.hp = Math.min(Game.STATS[u.kind].hp, u.hp + 40); });
+    } else if (kind === "highgate") {
+      foes.forEach(u => { u.hp -= 25; if (u.hp <= 0) { delete S.units[u.id]; const tile = S.tiles[u.q + "," + u.r]; if (tile) tile.unitId = null; } });
+    } else if (kind === "dreadbreaker") { S.energy.player += 50; S.data.player += 10; }
+    else if (kind === "accordender" && placed) {
+      foes.forEach(u => { u.hp -= 40; if (u.hp <= 0) { delete S.units[u.id]; const tile = S.tiles[u.q + "," + u.r]; if (tile) tile.unitId = null; } });
+      Object.values(S.tiles).forEach(t => { if (hexDist(placed, t) <= 2 && !t.unitId) t.owner = "player"; });
+    }
+    return shopFx[kind];
+  }
+  function forgeBurst(name) {
+    const el = document.createElement("div");
+    el.className = "forge";
+    el.innerHTML = "<b>FORGED</b><span>" + name + "</span>";
+    document.body.appendChild(el);
+    const sting = new Audio("media/vid-energy.mp4?v=sound");
+    sting.volume = 0.55;
+    const started = sting.play();
+    if (started && started.catch) started.catch(function () {});
+    setTimeout(function () { el.remove(); }, 1400);
+  }
+  let shopTab = "units";
+  function mountShop(root, redraw) {
+    if (!root) return;
+    const m = meta();
+    const held = m.t3xHeld || 0;
+    root.innerHTML = "";
+    const bar = document.createElement("div");
+    bar.className = "shopbar";
+    bar.innerHTML = "<span>T3X held</span><b>" + held + "</b>";
+    const filters = document.createElement("div");
+    filters.className = "shopfilters";
+    [["units", "Units"], ["cards", "Cards"], ["supplies", "Supplies"]].forEach(function (pair) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = pair[1];
+      if (shopTab === pair[0]) b.className = "on";
+      b.onclick = function () { shopTab = pair[0]; redraw(); };
+      filters.appendChild(b);
+    });
+    root.appendChild(bar);
+    root.appendChild(filters);
+    const note = document.createElement("p");
+    note.className = "muted";
+    if (shopTab === "units") {
+      const open = specials.filter(function (row) { return !(m.specials && m.specials[row[0]]); });
+      const feature = open[0] || specials[specials.length - 1];
+      const feat = document.createElement("button");
+      feat.type = "button";
+      feat.className = "feature";
+      feat.innerHTML = '<span class="shine"></span><img alt="" src="media/card-' + feature[0] + '.jpg"><div class="cap"><b>' + feature[1] + '</b><div class="price">' + feature[2] + ' T3X</div><p class="muted">' + shopFx[feature[0]] + "</p></div>";
+      feat.onclick = function () {
+        note.textContent = buySpecial(feature[0]);
+        if ((meta().specials || {})[feature[0]]) forgeBurst(feature[1]);
+        redraw();
+      };
+      root.appendChild(feat);
+      const grid = document.createElement("div");
+      grid.className = "shopgrid";
+      specials.forEach(function (row) {
+        const owned = !!(m.specials && m.specials[row[0]]);
+        const tier = row[2] >= 500 ? "mythic" : row[2] >= 200 ? "rare" : "";
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "shopcard " + tier;
+        card.innerHTML = '<span class="shine"></span><img alt="" src="media/card-' + row[0] + '.jpg"><div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + '</div><p class="muted">' + shopFx[row[0]] + "</p></div>";
+        card.onclick = function () {
+          if (owned) { note.textContent = row[1] + " is already in the unit deck."; return; }
+          note.textContent = buySpecial(row[0]);
+          if ((meta().specials || {})[row[0]]) forgeBurst(row[1]);
+          redraw();
+        };
+        grid.appendChild(card);
+      });
+      root.appendChild(grid);
+    } else if (shopTab === "cards") {
+      const grid = document.createElement("div");
+      grid.className = "shopgrid";
+      allCards().filter(function (c) { return c.gold; }).forEach(function (c) {
+        const n = (m.cards[c.id] || 0);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "shopcard mythic";
+        card.innerHTML = '<span class="shine"></span><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div><p class="muted">' + c.line + " You hold " + n + ".</p></div>";
+        card.onclick = function () {
+          const msg = buy(c.id);
+          note.textContent = msg;
+          if (msg.indexOf("Bought") === 0) forgeBurst(c.name);
+          redraw();
+        };
+        grid.appendChild(card);
+      });
+      root.appendChild(grid);
+    } else {
+      [["energy", "Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], ["data", "Data cache", 20, "16 Data, for repairs."], ["land", "Hex brand", 40, "One open hex becomes yours, if a battle is open."]].forEach(function (g) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "shopcard rare";
+        card.innerHTML = '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + ' T3X</div><p class="muted">' + g[3] + "</p></div>";
+        card.onclick = function () {
+          const box = meta();
+          if ((box.t3xHeld || 0) < g[2]) { note.textContent = "You need " + g[2] + " T3X. You hold " + (box.t3xHeld || 0) + "."; return; }
+          box.t3xHeld -= g[2];
+          const S = Game.S;
+          if (g[0] === "energy") { if (S && S.phase === "play") S.energy.player += 40; else box.bankEnergy = (box.bankEnergy || 0) + 40; }
+          else if (g[0] === "data") { if (S && S.phase === "play") S.data.player += 16; else box.bankData = (box.bankData || 0) + 16; }
+          else if (S) { const open = Object.values(S.tiles).find(function (t) { return !t.owner && !t.unitId; }); if (open) open.owner = "player"; }
+          save(box);
+          if (window.paintEarn) paintEarn();
+          if (S && Game.draw) Game.draw();
+          forgeBurst(g[1]);
+          note.textContent = "Bought " + g[1] + ".";
+          redraw();
+        };
+        root.appendChild(card);
+      });
+    }
+    root.appendChild(note);
+  }
+  function cashBank() {
+    const m = meta();
+    if (!Game.S) return;
+    if (m.bankEnergy) { Game.S.energy.player += m.bankEnergy; m.bankEnergy = 0; }
+    if (m.bankData) { Game.S.data.player += m.bankData; m.bankData = 0; }
+    save(m);
   }
 
   function allCards() {
@@ -892,6 +1045,9 @@
       return "Not unlocked.";
     },
     listUnits: unitCards,
+    onDeploy: onDeploy,
+    mountShop: mountShop,
+    cashBank: cashBank,
     sync: syncHud
   };
   installUnits();

@@ -168,6 +168,7 @@
     G.S.hotseat = !!hotseat;
     G.S.control = "player";
     G.S.phase = "play";
+    if (window.DominionCards && DominionCards.cashBank) DominionCards.cashBank();
     grantFree();
     G.draw();
     closeShell();
@@ -188,6 +189,7 @@
     spark: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"/></svg>',
     cog: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm8.5 3.2l-1.8-.4a6.6 6.6 0 0 0-.8-1.8l1-1.5-1.4-1.4-1.5 1a6.6 6.6 0 0 0-1.8-.8l-.4-1.8h-2l-.4 1.8a6.6 6.6 0 0 0-1.8.8l-1.5-1-1.4 1.4 1 1.5a6.6 6.6 0 0 0-.8 1.8l-1.8.4v2l1.8.4a6.6 6.6 0 0 0 .8 1.8l-1 1.5 1.4 1.4 1.5-1a6.6 6.6 0 0 0 1.8.8l.4 1.8h2l.4-1.8a6.6 6.6 0 0 0 1.8-.8l1.5 1 1.4-1.4-1-1.5a6.6 6.6 0 0 0 .8-1.8l1.8-.4z"/></svg>',
     hall: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M4 20V10l8-6 8 6v10h-5v-6H9v6z"/></svg>',
+    shop: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M6 7h12l-1 13H7zm2-3h8l1 3H7z"/></svg>',
     loop: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M7 7h9l-2-2m2 2l-2 2M17 17H8l2 2m-2-2l2-2"/></svg>'
   };
   function tile(go, label, icon, extra) {
@@ -279,6 +281,7 @@
         + tile("saves", "Saves", "save")
         + tile("multi", "Multiplayer", "people")
         + tile("cards", "Cards", "cards")
+        + tile("shop", "Shop", "shop")
         + tile("community", "Community", "hall")
         + tile("updates", "Updates", "spark")
         + tile("settings", "Settings", "cog")
@@ -316,6 +319,7 @@
         + '<button class="wide" type="button" id="reserve">' + (meta.freeUsed ? "Free Scout already used" : meta.freeScout ? "Free Scout reserved" : "Reserve free Scout") + '</button>'
         + '<h3>T3X Vault</h3><p class="muted">Choose Phantom, Solflare, or Backpack, or open T3X Vault. Every wallet will be accepted. Futuret3Ch is standing up its own chain, with bridging.</p>'
         + '<div class="stack" id="walletBox"></div>'
+        + '<button class="wide" type="button" data-go="shop">Open the shop</button>'
         + '<h3>Collections</h3><div id="colRoot"></div>'
         + '<h3>My friends</h3><p class="muted">Names stay on this device. Invites are coming soon.</p>'
         + '<div class="row"><input id="friendName" placeholder="Name" style="flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 10px"><button type="button" id="addFriend">Add</button></div>'
@@ -340,6 +344,9 @@
       });
       if (window.Collections) Collections.mount(document.getElementById("colRoot"));
       paintWallet(document.getElementById("walletBox"));
+    } else if (screen === "shop") {
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Shop</h2><p class="muted">Special units, gold cards, and supplies. A purchase forges in gold. Units hit the map with a major effect.</p><div id="shopRoot"></div>';
+      if (window.DominionCards) DominionCards.mountShop(document.getElementById("shopRoot"), function () { render("shop"); });
     } else if (screen === "updates") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
     } else if (screen === "cards") {
