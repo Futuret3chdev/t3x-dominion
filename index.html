@@ -236,7 +236,7 @@
   .shopcard.mythic, .feature { border-color: var(--gold); }
   .shopcard, .feature, .shopbuy { position: relative; z-index: 1; cursor: pointer; }
   .shoppick { margin: 10px 0; background: linear-gradient(180deg, #3a2a22, #1a140f); border-radius: 16px; padding: 8px; border: 1px solid #e6c56a; }
-  .shopanim, .shoppick img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 14px; display: block; background: #120e0a; }
+  .shopanim, .shoppick img { width: min(260px, 78%); height: 240px; max-height: 42vh; object-fit: contain; object-position: center; border-radius: 14px; display: block; margin: 8px auto; background: #120e0a; }
   .shoppick h3 { margin: 8px 0 0; }
   .shopbuy { display: block; width: 100%; min-height: 48px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--gold); background: #172028; color: #f4f7f8; }
   @keyframes shine { 55% { transform: translateX(120%); } 100% { transform: translateX(120%); } }
