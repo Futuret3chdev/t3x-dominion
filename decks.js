@@ -318,6 +318,7 @@
     setTimeout(function () { el.remove(); }, 1400);
   }
   let shopTab = "units";
+  let shopPick = null;
   function mountShop(root, redraw) {
     if (!root) return;
     const m = meta();
@@ -325,7 +326,9 @@
     root.innerHTML = "";
     const bar = document.createElement("div");
     bar.className = "shopbar";
-    bar.innerHTML = "<span>T3X held</span><b>" + held + "</b>";
+    bar.innerHTML = "<span>T3X held</span><b id='shopHeld'>" + held + "</b>";
+    root.appendChild(bar);
+    if (shopPick) { paintShopPick(root, redraw); return; }
     const filters = document.createElement("div");
     filters.className = "shopfilters";
     [["units", "Units"], ["cards", "Cards"], ["supplies", "Supplies"]].forEach(function (pair) {
@@ -336,23 +339,8 @@
       b.onclick = function () { shopTab = pair[0]; redraw(); };
       filters.appendChild(b);
     });
-    root.appendChild(bar);
     root.appendChild(filters);
-    const note = document.createElement("p");
-    note.className = "muted";
     if (shopTab === "units") {
-      const open = specials.filter(function (row) { return !(m.specials && m.specials[row[0]]); });
-      const feature = open[0] || specials[specials.length - 1];
-      const feat = document.createElement("button");
-      feat.type = "button";
-      feat.className = "feature";
-      feat.innerHTML = '<span class="shine"></span><img alt="" src="media/card-' + feature[0] + '.jpg"><div class="cap"><b>' + feature[1] + '</b><div class="price">' + feature[2] + ' T3X</div><p class="muted">' + shopFx[feature[0]] + "</p></div>";
-      feat.onclick = function () {
-        note.textContent = buySpecial(feature[0]);
-        if ((meta().specials || {})[feature[0]]) forgeBurst(feature[1]);
-        redraw();
-      };
-      root.appendChild(feat);
       const grid = document.createElement("div");
       grid.className = "shopgrid";
       specials.forEach(function (row) {
@@ -361,13 +349,8 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard " + tier;
-        card.innerHTML = '<span class="shine"></span><img alt="" src="media/card-' + row[0] + '.jpg"><div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + '</div><p class="muted">' + shopFx[row[0]] + "</p></div>";
-        card.onclick = function () {
-          if (owned) { note.textContent = row[1] + " is already in the unit deck."; return; }
-          note.textContent = buySpecial(row[0]);
-          if ((meta().specials || {})[row[0]]) forgeBurst(row[1]);
-          redraw();
-        };
+        card.innerHTML = '<img alt="" src="media/card-' + row[0] + '.jpg"><div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + "</div></div>";
+        card.onclick = function () { shopPick = { kind: "unit", id: row[0] }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
@@ -375,46 +358,110 @@
       const grid = document.createElement("div");
       grid.className = "shopgrid";
       allCards().filter(function (c) { return c.gold; }).forEach(function (c) {
-        const n = (m.cards[c.id] || 0);
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = '<span class="shine"></span><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div><p class="muted">' + c.line + " You hold " + n + ".</p></div>";
-        card.onclick = function () {
-          const msg = buy(c.id);
-          note.textContent = msg;
-          if (msg.indexOf("Bought") === 0) forgeBurst(c.name);
-          redraw();
-        };
+        card.innerHTML = '<div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div><p class="muted">' + c.line + "</p></div>";
+        card.onclick = function () { shopPick = { kind: "card", id: c.id }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
     } else {
-      [["energy", "Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], ["data", "Data cache", 20, "16 Data, for repairs."], ["land", "Hex brand", 40, "One open hex becomes yours, if a battle is open."]].forEach(function (g) {
+      [["energy", "Energy cache", 20], ["data", "Data cache", 20], ["land", "Hex brand", 40]].forEach(function (g) {
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard rare";
-        card.innerHTML = '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + ' T3X</div><p class="muted">' + g[3] + "</p></div>";
-        card.onclick = function () {
-          const box = meta();
-          if ((box.t3xHeld || 0) < g[2]) { note.textContent = "You need " + g[2] + " T3X. You hold " + (box.t3xHeld || 0) + "."; return; }
-          box.t3xHeld -= g[2];
-          const S = Game.S;
-          if (g[0] === "energy") { if (S && S.phase === "play") S.energy.player += 40; else box.bankEnergy = (box.bankEnergy || 0) + 40; }
-          else if (g[0] === "data") { if (S && S.phase === "play") S.data.player += 16; else box.bankData = (box.bankData || 0) + 16; }
-          else if (S) { const open = Object.values(S.tiles).find(function (t) { return !t.owner && !t.unitId; }); if (open) open.owner = "player"; }
-          save(box);
-          if (window.paintEarn) paintEarn();
-          if (S && Game.draw) Game.draw();
-          forgeBurst(g[1]);
-          note.textContent = "Bought " + g[1] + ".";
-          redraw();
-        };
+        card.innerHTML = '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
+        card.onclick = function () { shopPick = { kind: "supply", id: g[0] }; redraw(); };
         root.appendChild(card);
       });
     }
+  }
+  function paintShopPick(root, redraw) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "shopbuy";
+    back.textContent = "Back to the shelf";
+    back.onclick = function () { shopPick = null; redraw(); };
+    root.appendChild(back);
+    const note = document.createElement("p");
+    note.className = "muted";
+    if (shopPick.kind === "unit") {
+      const row = specials.find(function (s) { return s[0] === shopPick.id; });
+      const owned = !!(meta().specials && meta().specials[row[0]]);
+      const st = Game.STATS[row[0]];
+      const panel = document.createElement("article");
+      panel.className = "shoppick";
+      panel.innerHTML = '<img alt="" src="media/card-' + row[0] + '.jpg"><h3>' + row[1] + '</h3><p class="price">' + row[2] + ' T3X</p><p>' + shopFx[row[0]] + '</p><p class="muted">Field cost ' + st.cost + ' Energy. Health ' + st.hp + '. Hit ' + st.atk + '. Walks ' + st.move + '. Range ' + st.range + '.</p>';
+      const buyBtn = document.createElement("button");
+      buyBtn.type = "button";
+      buyBtn.className = "shopbuy";
+      buyBtn.textContent = owned ? "Owned. Field it from Units." : "Buy " + row[1];
+      buyBtn.disabled = owned;
+      buyBtn.onclick = function () {
+        note.textContent = buySpecial(row[0]);
+        if (meta().specials && meta().specials[row[0]]) {
+          forgeBurst(row[1]);
+          buyBtn.textContent = "Owned. Field it from Units.";
+          buyBtn.disabled = true;
+          const held = document.getElementById("shopHeld");
+          if (held) held.textContent = String(meta().t3xHeld || 0);
+        }
+      };
+      root.appendChild(panel);
+      root.appendChild(buyBtn);
+    } else if (shopPick.kind === "card") {
+      const c = allCards().find(function (card) { return card.id === shopPick.id; });
+      const panel = document.createElement("article");
+      panel.className = "shoppick";
+      panel.innerHTML = "<h3>" + c.name + "</h3><p class='price'>10 T3X</p><p>" + c.line + "</p><p class='muted'>" + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
+      const buyBtn = document.createElement("button");
+      buyBtn.type = "button";
+      buyBtn.className = "shopbuy";
+      buyBtn.textContent = "Buy " + c.name;
+      buyBtn.onclick = function () {
+        const msg = buy(c.id);
+        note.textContent = msg;
+        if (msg.indexOf("Bought") === 0) {
+          forgeBurst(c.name);
+          const held = document.getElementById("shopHeld");
+          if (held) held.textContent = String(meta().t3xHeld || 0);
+        }
+      };
+      root.appendChild(panel);
+      root.appendChild(buyBtn);
+    } else {
+      const goods = { energy: ["Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], data: ["Data cache", 20, "16 Data for repairs."], land: ["Hex brand", 40, "One open hex becomes yours, if a battle is open."] };
+      const g = goods[shopPick.id];
+      const panel = document.createElement("article");
+      panel.className = "shoppick";
+      panel.innerHTML = "<h3>" + g[0] + "</h3><p class='price'>" + g[1] + " T3X</p><p>" + g[2] + "</p>";
+      const buyBtn = document.createElement("button");
+      buyBtn.type = "button";
+      buyBtn.className = "shopbuy";
+      buyBtn.textContent = "Buy " + g[0];
+      buyBtn.onclick = function () {
+        const box = meta();
+        if ((box.t3xHeld || 0) < g[1]) { note.textContent = "You need " + g[1] + " T3X. You hold " + (box.t3xHeld || 0) + "."; return; }
+        box.t3xHeld -= g[1];
+        const S = Game.S;
+        if (shopPick.id === "energy") { if (S && S.phase === "play") S.energy.player += 40; else box.bankEnergy = (box.bankEnergy || 0) + 40; }
+        else if (shopPick.id === "data") { if (S && S.phase === "play") S.data.player += 16; else box.bankData = (box.bankData || 0) + 16; }
+        else if (S) { const open = Object.values(S.tiles).find(function (tile) { return !tile.owner && !tile.unitId; }); if (open) open.owner = "player"; }
+        save(box);
+        if (window.paintEarn) paintEarn();
+        if (S && Game.draw) Game.draw();
+        forgeBurst(g[0]);
+        note.textContent = "Bought " + g[0] + ".";
+        const held = document.getElementById("shopHeld");
+        if (held) held.textContent = String(box.t3xHeld || 0);
+      };
+      root.appendChild(panel);
+      root.appendChild(buyBtn);
+    }
     root.appendChild(note);
   }
+
   function cashBank() {
     const m = meta();
     if (!Game.S) return;
@@ -691,9 +738,8 @@
       const own = ownsUnit(row[0]);
       return cardFrom(row[0], row[1], own ? row[3] + " Energy" : "Hold " + row[2] + " hexes", row[9], own, 0);
     });
-    const bought = specials.map(row => {
-      const own = ownsUnit(row[0]);
-      return cardFrom(row[0], row[1], own ? row[3] + " Energy" : row[2] + " T3X", row[9], own, row[2]);
+    const bought = specials.filter(row => ownsUnit(row[0])).map(row => {
+      return cardFrom(row[0], row[1], row[3] + " Energy", row[9], true, 0);
     });
     return base.concat(earned, bought).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
   }
@@ -1039,7 +1085,7 @@
     canField: ownsUnit,
     fieldReason: function (kind) {
       const s = specials.find(row => row[0] === kind);
-      if (s && !ownsUnit(kind)) return s[1] + " costs " + s[2] + " T3X. Buy it from the unit deck.";
+      if (s && !ownsUnit(kind)) return s[1] + " costs " + s[2] + " T3X. Buy it in the shop.";
       const f = fieldUnits.find(row => row[0] === kind);
       if (f && !ownsUnit(kind)) return f[1] + " joins when you hold " + f[2] + " hexes.";
       return "Not unlocked.";

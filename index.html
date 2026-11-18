@@ -206,7 +206,11 @@
   .shopcard img { width: 100%; height: 132px; object-fit: cover; display: block; }
   .shopcard.rare { border-color: #7eb6ff; }
   .shopcard.mythic, .feature { border-color: var(--gold); }
-  .shine { position: absolute; inset: 0 0 auto 0; height: 100%; background: linear-gradient(110deg, transparent 36%, rgba(255,255,255,.22) 50%, transparent 64%); transform: translateX(-120%); animation: shine 3.6s ease infinite; pointer-events: none; }
+  .shopcard, .feature, .shopbuy { position: relative; z-index: 1; cursor: pointer; }
+  .shoppick { margin: 10px 0; }
+  .shoppick img { width: 100%; max-height: 360px; object-fit: contain; border-radius: 16px; display: block; background: #07090c; }
+  .shoppick h3 { margin: 8px 0 0; }
+  .shopbuy { display: block; width: 100%; min-height: 48px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--gold); background: #172028; color: #f4f7f8; }
   @keyframes shine { 55% { transform: translateX(120%); } 100% { transform: translateX(120%); } }
   .forge { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; align-content: center; pointer-events: none; background: radial-gradient(circle, rgba(212,175,55,.42), rgba(7,9,12,.2) 55%, transparent 70%); animation: forge 1.35s ease forwards; }
   .forge b { font-family: Oswald, sans-serif; font-size: 68px; letter-spacing: .18em; color: var(--gold); }
@@ -806,7 +810,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=deckgif"></script>
-<script src="shell.js?v=deckgif"></script>
+<script src="decks.js?v=shop2"></script>
+<script src="shell.js?v=shop2"></script>
 </body>
 </html>

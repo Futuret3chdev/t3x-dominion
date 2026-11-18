@@ -345,7 +345,7 @@
       if (window.Collections) Collections.mount(document.getElementById("colRoot"));
       paintWallet(document.getElementById("walletBox"));
     } else if (screen === "shop") {
-      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Shop</h2><p class="muted">Special units, gold cards, and supplies. A purchase forges in gold. Units hit the map with a major effect.</p><div id="shopRoot"></div>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Shop</h2><p class="muted">Tap a card to open it. T3X units stay here until you buy them. Then they join the unit deck.</p><div id="shopRoot"></div>';
       if (window.DominionCards) DominionCards.mountShop(document.getElementById("shopRoot"), function () { render("shop"); });
     } else if (screen === "updates") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
