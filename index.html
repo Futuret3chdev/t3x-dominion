@@ -162,7 +162,10 @@
     .cards-row { flex-direction: column; }
     .gcard { width: 100%; }
   }
-  .deckrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .deckbtn { width: 64px; height: 44px; overflow: visible; background: transparent; border-color: transparent; padding: 0; }
+  .deckgif { width: 64px; height: 44px; object-fit: contain; display: block; pointer-events: none; }
+  .deckrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(48px); pointer-events: none; margin: 0; transition: max-height .45s ease, opacity .35s ease, transform .45s ease; }
+  .app.decks-open .deckrow { max-height: 160px; opacity: 1; transform: none; pointer-events: auto; margin-bottom: 8px; }
   .decklaunch { display: flex; gap: 8px; align-items: center; text-align: left; min-height: 64px; border-radius: 14px; border: 1px solid var(--gold); background: #10161c; padding: 8px; }
   .decklaunch .deck { position: relative; width: 28px; height: 22px; flex: none; }
   .hudpull { display: none; min-height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); padding: 0 10px; }
@@ -236,7 +239,7 @@
       </div>
       <div class="tools">
         <button class="hudpull" id="hudPull" type="button">Info</button>
-        <button class="iconbtn deckbtn" id="cardsBtn" type="button" aria-label="Cards"><span class="deck" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        <button class="iconbtn deckbtn" id="cardsBtn" type="button" aria-label="Decks" aria-pressed="false"><img class="deckgif" id="deckGif" alt="" src="media/icon-one.gif"></button>
         <div class="cogwrap">
           <button class="iconbtn" id="cogBtn" type="button" aria-label="Settings" aria-expanded="false">
             <svg class="cog" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13.5a7.7 7.7 0 0 0 .1-1.5 7.7 7.7 0 0 0-.1-1.5l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-2.6-1.5l-.4-2.5h-4l-.4 2.5a7.4 7.4 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.6a7.7 7.7 0 0 0-.1 1.5 7.7 7.7 0 0 0 .1 1.5l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.4 7.4 0 0 0 2.6-1.5l2.4 1 2-3.4zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/></svg>
@@ -803,7 +806,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=shop"></script>
-<script src="shell.js?v=shop"></script>
+<script src="decks.js?v=deckgif"></script>
+<script src="shell.js?v=deckgif"></script>
 </body>
 </html>

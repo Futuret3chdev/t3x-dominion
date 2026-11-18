@@ -412,8 +412,14 @@
   });
   document.getElementById("menuBtn").onclick = () => { pop.hidden = true; cog.classList.remove("open"); openShell("home"); };
   document.getElementById("cardsBtn").onclick = () => {
-    const tray = document.getElementById("cards");
-    if (tray.hidden) openCards(); else tray.hidden = true;
+    const app = document.querySelector(".app");
+    const img = document.getElementById("deckGif");
+    const open = !app.classList.contains("decks-open");
+    app.classList.toggle("decks-open", open);
+    document.getElementById("cardsBtn").setAttribute("aria-pressed", String(open));
+    clearTimeout(window._deckGif);
+    img.src = (open ? "media/icon-shuffle.gif" : "media/icon-return.gif") + "?t=" + Date.now();
+    window._deckGif = setTimeout(() => { img.src = open ? "media/icon-fan.gif" : "media/icon-one.gif"; }, 780);
   };
   document.getElementById("cardsClose").onclick = () => { document.getElementById("cards").hidden = true; if (window.DominionCards) DominionCards.sync(); };
   document.getElementById("hudPull").onclick = () => document.querySelector(".app").classList.toggle("hudopen");
