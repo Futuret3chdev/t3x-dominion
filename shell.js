@@ -72,7 +72,7 @@
     muted = on;
     if (master) master.gain.value = muted || paused ? 0 : 0.2;
     if (music) music.muted = muted;
-    document.getElementById("muteBtn").textContent = muted ? "×" : "♪";
+    document.getElementById("muteBtn").classList.toggle("is-muted", muted);
   }
   function setPause(on) {
     paused = on;
@@ -85,7 +85,7 @@
         if (pending) pending.catch(function () {});
       }
     }
-    document.getElementById("pauseBtn").textContent = paused ? "▶" : "II";
+    document.getElementById("pauseBtn").classList.toggle("is-paused", paused);
   }
 
   function snapshot() {
@@ -148,8 +148,21 @@
   const icons = {
     x: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 4h4.2l3.3 4.6L15.6 4H20l-6.2 7.6L20.4 20h-4.2l-3.6-5-4.2 5H4.2l6.6-7.8z"/></svg>',
     fb: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H8v3h2v7h3v-7h2.6l.4-3H13v-2c0-.6.4-1 1-1z"/></svg>',
-    ig: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg>'
+    ig: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg>',
+    play: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l12-7z"/></svg>',
+    back: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M14 6l-6 6 6 6 1.4-1.4L10.8 12l4.6-4.6z"/></svg>',
+    film: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M4 6h12v12H4zm14 2h2v2h-2zm0 4h2v2h-2zm0 4h2v2h-2zM6 8h2v2H6zm0 6h2v2H6z"/></svg>',
+    save: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M5 3h11l3 3v15H5zm2 2v6h8V5zm0 10v4h10v-4z"/></svg>',
+    people: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="8" cy="9" r="2.4" fill="currentColor"/><circle cx="16" cy="9" r="2.4" fill="currentColor"/><path fill="currentColor" d="M3.5 18c.4-2.4 2.3-3.6 4.5-3.6s4.1 1.2 4.5 3.6zm8 0c.3-1.6 1.2-2.8 2.6-3.4 1.6-.2 3.3.7 3.9 3.4z"/></svg>',
+    cards: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><rect x="3" y="6" width="12" height="15" rx="2" transform="rotate(-10 9 13)" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="8" y="4" width="12" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"/></svg>',
+    cog: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm8.5 3.2l-1.8-.4a6.6 6.6 0 0 0-.8-1.8l1-1.5-1.4-1.4-1.5 1a6.6 6.6 0 0 0-1.8-.8l-.4-1.8h-2l-.4 1.8a6.6 6.6 0 0 0-1.8.8l-1.5-1-1.4 1.4 1 1.5a6.6 6.6 0 0 0-.8 1.8l-1.8.4v2l1.8.4a6.6 6.6 0 0 0 .8 1.8l-1 1.5 1.4 1.4 1.5-1a6.6 6.6 0 0 0 1.8.8l.4 1.8h2l.4-1.8a6.6 6.6 0 0 0 1.8-.8l1.5 1 1.4-1.4-1-1.5a6.6 6.6 0 0 0 .8-1.8l1.8-.4z"/></svg>',
+    hall: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M4 20V10l8-6 8 6v10h-5v-6H9v6z"/></svg>',
+    loop: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" d="M7 7h9l-2-2m2 2l-2 2M17 17H8l2 2m-2-2l2-2"/></svg>'
   };
+  function tile(go, label, icon, extra) {
+    return '<button class="tile ' + (extra || "") + '" type="button" data-go="' + go + '" aria-label="' + label + '">' + icons[icon] + '</button>';
+  }
 
   function render(screen) {
     const body = document.getElementById("shellBody");
@@ -160,23 +173,23 @@
         + '<div class="row"><h2>T3X DOMINION</h2><span>'
         + '<a class="mark" href="https://futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/futuret3ch-mark.png" alt="Futuret3Ch"></a> '
         + '<a class="mark" href="https://t3x.futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/t3x-badge.png" alt="T3X"></a></span></div>'
-        + '<p class="muted">Hold half the grid. Teal at the bottom. Crimson at the top.</p>'
-        + '<div class="menu-actions">'
-        + '<button class="go" type="button" data-go="play">Play</button>'
-        + (saves[0] ? '<button type="button" data-go="continue">Continue · ' + saves[0].blurb + '</button>' : '')
-        + '<button type="button" data-go="trailer">Trailer</button>'
-        + '<button type="button" data-go="saves">Save, load, delete</button>'
-        + '<button type="button" data-go="multi">Multiplayer</button>'
-        + '<button type="button" data-go="cards">Cards</button>'
-        + '<button type="button" data-go="community">Community</button>'
-        + '<button type="button" data-go="updates">Updates</button>'
-        + '<button type="button" data-go="settings">Settings</button>'
-        + (G.S && G.S.phase !== "briefing" ? '<button type="button" data-go="back">Back to battle</button>' : '')
-        + '</div>';
+        + '<p class="muted">Hold half the grid.</p>'
+        + '<div class="iconmenu">'
+        + tile("play", "Play", "play", "play")
+        + (saves[0] ? tile("continue", "Continue", "loop") : "")
+        + tile("trailer", "Trailer", "film")
+        + tile("saves", "Saves", "save")
+        + tile("multi", "Multiplayer", "people")
+        + tile("cards", "Cards", "cards")
+        + tile("community", "Community", "hall")
+        + tile("updates", "Updates", "spark")
+        + tile("settings", "Settings", "cog")
+        + (G.S && G.S.phase !== "briefing" ? tile("back", "Back to battle", "back") : "")
+        + '</div><p class="menuhint" id="menuHint">Tap an icon</p>';
     } else if (screen === "trailer") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Trailer</h2><p class="muted">No watermark. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">No watermark. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
     } else if (screen === "saves") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Saves</h2><p class="muted">Three slots on this device. The newest replaces the oldest.</p><button class="wide" type="button" id="saveNow">Save this battle</button><div class="stack" id="slotList"></div>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Saves</h2><p class="muted">Three slots on this device. The newest replaces the oldest.</p><button class="wide" type="button" id="saveNow">Save this battle</button><div class="stack" id="slotList"></div>';
       const list = body.querySelector("#slotList");
       if (!saves.length) list.innerHTML = '<p class="muted">No saves yet.</p>';
       saves.forEach(row => {
@@ -187,16 +200,16 @@
       });
       body.querySelector("#saveNow").onclick = () => { saveSlot("Battle"); render("saves"); };
     } else if (screen === "multi") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Multiplayer</h2><div class="stack"><button type="button" id="hotseat"><b>Pass and play</b><span class="muted" style="display:block">Two people, one phone. Teal, then crimson.</span></button><button type="button" disabled><b>Online rooms</b><span class="soon" style="display:block">Coming soon</span></button></div>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Multiplayer</h2><div class="stack"><button type="button" id="hotseat"><b>Pass and play</b><span class="muted" style="display:block">Two people, one phone. Teal, then crimson.</span></button><button type="button" disabled><b>Online rooms</b><span class="soon" style="display:block">Coming soon</span></button></div>';
       body.querySelector("#hotseat").onclick = () => newBattle(true);
     } else if (screen === "settings") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Settings</h2><p>Music</p><p class="muted" id="nowPlaying">Playing ' + TRACKS[track].title + '. The three tracks loop.</p><div class="stack"><button type="button" id="musicToggle">Music ' + (paused ? "off" : "on") + '</button><button type="button" id="nextTrack">Next track</button><button type="button" id="muteToggle">Sound ' + (muted ? "off" : "on") + '</button></div><p>Social connect</p><div class="socials"><button type="button" data-soon="x" aria-label="X">' + icons.x + '</button><button type="button" data-soon="fb" aria-label="Facebook">' + icons.fb + '</button><button type="button" data-soon="ig" aria-label="Instagram">' + icons.ig + '</button></div><p class="soon" id="soonNote">Coming soon — connect is not live yet.</p>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Settings</h2><p>Music</p><p class="muted" id="nowPlaying">Playing ' + TRACKS[track].title + '. The three tracks loop.</p><div class="stack"><button type="button" id="musicToggle">Music ' + (paused ? "off" : "on") + '</button><button type="button" id="nextTrack">Next track</button><button type="button" id="muteToggle">Sound ' + (muted ? "off" : "on") + '</button></div><p>Social connect</p><div class="socials"><button type="button" data-soon="x" aria-label="X">' + icons.x + '</button><button type="button" data-soon="fb" aria-label="Facebook">' + icons.fb + '</button><button type="button" data-soon="ig" aria-label="Instagram">' + icons.ig + '</button></div><p class="soon" id="soonNote">Coming soon — connect is not live yet.</p>';
       body.querySelectorAll("[data-soon]").forEach(b => b.onclick = () => { document.getElementById("soonNote").textContent = "Coming soon. " + b.getAttribute("aria-label") + " connect is not switched on yet."; });
       body.querySelector("#musicToggle").onclick = () => { ensureAudio(); setPause(!paused); render("settings"); };
       body.querySelector("#nextTrack").onclick = () => { ensureAudio(); playTrack(track + 1); render("settings"); };
       body.querySelector("#muteToggle").onclick = () => { setMute(!muted); render("settings"); };
     } else if (screen === "community") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Community</h2>'
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Community</h2>'
         + '<h3>Freebies</h3><p class="muted">Follow Futuret3Ch. The free Scout is reserved on this phone. It is not paid on-chain until the T3X vault is connected.</p>'
         + '<div class="socials"><button type="button" aria-label="X">' + icons.x + '</button><button type="button" aria-label="Facebook">' + icons.fb + '</button><button type="button" aria-label="Instagram">' + icons.ig + '</button></div>'
         + '<p class="soon">Follow links coming soon.</p>'
@@ -225,12 +238,17 @@
         list.appendChild(row);
       });
     } else if (screen === "updates") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
     } else if (screen === "cards") {
       openCards();
       closeShell();
       return;
     }
+    body.querySelectorAll(".tile").forEach(b => {
+      const show = () => { const h = document.getElementById("menuHint"); if (h) h.textContent = b.getAttribute("aria-label"); };
+      b.onpointerenter = show;
+      b.onfocus = show;
+    });
     body.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
       const go = b.getAttribute("data-go");
       if (go === "play") newBattle(false);
@@ -257,7 +275,18 @@
     });
   }
 
-  document.getElementById("menuBtn").onclick = () => openShell("home");
+  const cog = document.getElementById("cogBtn");
+  const pop = document.getElementById("cogPop");
+  cog.onclick = (e) => {
+    e.stopPropagation();
+    pop.hidden = !pop.hidden;
+    cog.classList.toggle("open", !pop.hidden);
+    cog.setAttribute("aria-expanded", String(!pop.hidden));
+  };
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".cogwrap")) { pop.hidden = true; cog.classList.remove("open"); cog.setAttribute("aria-expanded", "false"); }
+  });
+  document.getElementById("menuBtn").onclick = () => { pop.hidden = true; cog.classList.remove("open"); openShell("home"); };
   document.getElementById("cardsBtn").onclick = () => {
     const tray = document.getElementById("cards");
     if (tray.hidden) openCards(); else tray.hidden = true;
