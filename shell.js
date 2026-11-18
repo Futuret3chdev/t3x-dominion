@@ -411,12 +411,14 @@
     if (!e.target.closest(".cogwrap")) { pop.hidden = true; cog.classList.remove("open"); cog.setAttribute("aria-expanded", "false"); }
   });
   document.getElementById("menuBtn").onclick = () => { pop.hidden = true; cog.classList.remove("open"); openShell("home"); };
-  document.getElementById("cardsBtn").onclick = () => {
+  const cardsBtn = document.getElementById("cardsBtn");
+  if (cardsBtn) cardsBtn.onclick = () => {
     const app = document.querySelector(".app");
     const img = document.getElementById("deckGif");
     const open = !app.classList.contains("decks-open");
     app.classList.toggle("decks-open", open);
-    document.getElementById("cardsBtn").setAttribute("aria-pressed", String(open));
+    cardsBtn.setAttribute("aria-pressed", String(open));
+    if (!img) return;
     clearTimeout(window._deckGif);
     img.src = (open ? "media/icon-shuffle.gif" : "media/icon-return.gif") + "?t=" + Date.now();
     window._deckGif = setTimeout(() => { img.src = open ? "media/icon-fan.gif" : "media/icon-one.gif"; }, 780);
