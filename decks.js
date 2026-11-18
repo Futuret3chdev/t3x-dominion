@@ -10,7 +10,12 @@
     if (!m.cards) m.cards = { "forge-lookout": 2 };
     if (!m.nfts) m.nfts = [];
     if (!m.redeemed) m.redeemed = [];
+    if (!m.requests) m.requests = [];
     if (!m.utilities) m.utilities = 1;
+    for (let i = 0; i < m.utilities; i++) {
+      const id = utilities[i][0];
+      if (m.cards[id] == null) m.cards[id] = 1;
+    }
     if (!m.captures) m.captures = 0;
     if (!m.missions) m.missions = {};
     save(m);
@@ -243,7 +248,11 @@
   function onCapture() {
     const m = meta();
     m.captures = (m.captures || 0) + 1;
-    if (m.utilities < utilities.length && m.captures % 3 === 0) m.utilities += 1;
+    if (m.utilities < utilities.length && m.captures % 3 === 0) {
+      m.utilities += 1;
+      const u = utilities[m.utilities - 1];
+      m.cards[u[0]] = (m.cards[u[0]] || 0) + 1;
+    }
     save(m);
     stampMissions();
     let got = null;
@@ -318,6 +327,13 @@
       };
       list.appendChild(el);
     });
+    const reqTitle = document.createElement("h3");
+    reqTitle.textContent = "Friend requests";
+    root.appendChild(reqTitle);
+    const reqHost = document.createElement("div");
+    reqHost.className = "stack";
+    root.appendChild(reqHost);
+    paintRequests(reqHost);
   }
   function paintDeck(body, d) {
     const m = meta();
@@ -358,7 +374,238 @@
     });
   }
 
+  let openKind = "power";
+  function countOf(id) { return (meta().cards[id] || 0); }
+  function unitCount(kind) {
+    if (!Game.S) return 0;
+    return Object.values(Game.S.units).filter(u => u.side === "player" && u.kind === kind).length;
+  }
+  function useUtility(id) {
+    const m = meta();
+    if ((m.cards[id] || 0) < 1) return "You do not hold this card yet. Take land, or buy it.";
+    const S = Game.S;
+    if (!S || S.phase !== "play") return "Use this during your turn.";
+    let msg = "";
+    if (id === "power-ration") { S.energy.player += 8; msg = "Field Ration added 8 Energy."; }
+    else if (id === "power-scrap") { S.energy.player += 20; msg = "Scrap Charge added 20 Energy."; }
+    else if (id === "power-relay") {
+      const n = Object.values(S.tiles).filter(t => t.relay && t.owner === "player").length;
+      const g = 4 + n * 4; S.energy.player += g; msg = "Relay Tap added " + g + " Energy.";
+    } else if (id === "power-oil") { S.data.player += 6; msg = "Night Oil added 6 Data."; }
+    else if (id === "power-barrel") { S.energy.player += 10; msg = "Spare Barrel added 10 Energy."; }
+    else if (id === "power-map") { msg = "Map Scrap: bright hexes are where you can walk. Grey land becomes yours."; }
+    else if (id === "power-cloth") { S.energy.player += 4; msg = "Banner Cloth added 4 Energy."; }
+    else if (id === "power-coal") { S.energy.player += 6; S.data.player += 2; msg = "Forge Coal added 6 Energy and 2 Data."; }
+    else if (id === "power-flare") { S.energy.player += 2; msg = "Signal Flare added 2 Energy."; }
+    else if (id === "power-medic") {
+      const u = S.selectedId && S.units[S.selectedId];
+      if (!u || u.side !== "player") return "Select one of your units, then use Medic Kit.";
+      const st = Game.STATS[u.kind];
+      u.hp = Math.min(st.hp, u.hp + 40);
+      msg = "Medic Kit set " + st.name + " to " + u.hp + " health.";
+    } else if (id === "power-pin") { S.energy.player += 6; msg = "Siege Pin added 6 Energy."; }
+    else if (id === "power-coin") return "Oath Coin stays in the collection. It is not spent.";
+    else return "This card is part of a collection. Finish the set for the prize.";
+    if (id !== "power-coin") m.cards[id] -= 1;
+    save(m);
+    S.flash = msg;
+    Game.draw();
+    return msg;
+  }
+  function powerCards() {
+    const S = Game.S;
+    const m = meta();
+    const cards = [
+      { id: "energy", name: "Energy", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
+      { id: "data", name: "Data", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
+    ];
+    utilities.forEach((u, i) => {
+      const owned = i < m.utilities;
+      const n = m.cards[u[0]] || 0;
+      cards.push({ id: u[0], name: u[1], kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
+    });
+    allCards().forEach(c => {
+      const n = m.cards[c.id] || 0;
+      cards.push({ id: c.id, name: c.name, kicker: c.collection, countLabel: n ? "Hold " + n : "Need", ready: n > 0, gold: c.gold, explain: c.line + " Part of " + c.collection + " in " + c.deck + "." + (c.gold ? " Gold. Earn it with a mission, or buy it for 10 T3X." : " Buy a copy for 3 T3X, or salvage it in battle."), stats: [["You hold", n], ["Deck", c.deck], ["Collection", c.collection], ["Prize", c.prize], ["Kind", c.gold ? "Gold" : "Normal"]], use: () => "Collection cards are kept, sent, or finished as a set. They are not spent on the map." });
+    });
+    cards.sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
+    return cards;
+  }
+  function unitCards() {
+    const S = Game.S;
+    return ["scout", "defender", "attacker", "artillery"].map(k => {
+      const st = Object.assign({ kind: k }, Game.STATS[k]);
+      const n = unitCount(k);
+      const ready = S.energy.player >= st.cost && S.phase === "play";
+      return { id: k, name: st.name, kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
+    }).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
+  }
+  function friendNames() {
+    const m = meta();
+    return (m.friends && m.friends.length) ? m.friends.slice() : ["Friend"];
+  }
+  function askCard(cardId, from) {
+    const m = meta();
+    const code = "T3X-ASK-" + cardId + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    m.requests.push({ id: code, from: from || "Friend", cardId, dir: "out", status: "open" });
+    save(m);
+    return code;
+  }
+  function addRequest(code, from) {
+    const m = meta();
+    const clean = (code || "").trim().toUpperCase();
+    const match = clean.match(/^T3X-ASK-(.+)-([A-Z0-9]{4})$/);
+    if (!match) return "That is not a request code.";
+    if (m.requests.some(r => r.id === clean)) return "You already have this request.";
+    const card = cardById(match[1].toLowerCase()) || utilities.find(u => u[0] === match[1].toLowerCase());
+    const id = match[1].toLowerCase();
+    if (!card && !utilities.some(u => u[0] === id)) return "Unknown card.";
+    m.requests.push({ id: clean, from: (from || "Friend").slice(0, 24), cardId: id, dir: "in", status: "open" });
+    save(m);
+    return (from || "Friend") + " asked for " + (cardById(id) ? cardById(id).name : id) + ".";
+  }
+  function requestName(id) {
+    const c = cardById(id);
+    if (c) return c.name;
+    const u = utilities.find(x => x[0] === id);
+    return u ? u[1] : id;
+  }
+  function paintRequests(host) {
+    host.innerHTML = "";
+    const m = meta();
+    const title = document.createElement("p");
+    title.innerHTML = "<b>Friend requests</b>";
+    host.appendChild(title);
+    const incoming = (m.requests || []).filter(r => r.status === "open");
+    if (!incoming.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = "No open requests. Ask from a card, or paste a friend's request code.";
+      host.appendChild(empty);
+    }
+    incoming.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "slot";
+      const who = r.dir === "in" ? r.from + " wants" : "You asked for";
+      row.innerHTML = "<div><b>" + who + " " + requestName(r.cardId) + "</b><div class='muted'>" + (r.dir === "in" ? "Send a spare if you hold more than one." : r.id) + "</div></div>";
+      if (r.dir === "in") {
+        const go = document.createElement("button");
+        go.type = "button";
+        go.textContent = "Send spare";
+        go.onclick = () => {
+          const code = send(r.cardId);
+          const note = document.createElement("div");
+          note.className = "muted";
+          if (!code) note.textContent = "You can send only when you hold more than one.";
+          else {
+            r.status = "done";
+            r.gift = code;
+            save(meta());
+            note.textContent = "Give them this code: " + code;
+          }
+          row.appendChild(note);
+          if (code) paintRequests(host);
+        };
+        row.appendChild(go);
+      }
+      host.appendChild(row);
+    });
+    const form = document.createElement("div");
+    form.className = "row";
+    form.innerHTML = '<input id="askPaste" placeholder="Friend request code" style="flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 10px"><input id="askFrom" placeholder="Their name" style="width:96px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 8px"><button type="button" id="askAdd">Add</button>';
+    host.appendChild(form);
+    form.querySelector("#askAdd").onclick = () => {
+      const msg = addRequest(form.querySelector("#askPaste").value, form.querySelector("#askFrom").value);
+      paintRequests(host);
+      const p = document.createElement("p");
+      p.className = "muted";
+      p.textContent = msg;
+      host.appendChild(p);
+    };
+  }
+  function showDetail(card) {
+    const box = document.getElementById("cardDetail");
+    if (!box) return;
+    box.hidden = false;
+    box.innerHTML = "";
+    const h = document.createElement("b");
+    h.textContent = card.name;
+    const p = document.createElement("p");
+    p.textContent = card.explain;
+    const note = document.createElement("p");
+    note.className = "muted";
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const use = document.createElement("button");
+    use.type = "button"; use.textContent = "Use";
+    use.onclick = () => { note.textContent = card.use ? card.use() : ""; };
+    const view = document.createElement("button");
+    view.type = "button"; view.textContent = "View";
+    const stats = document.createElement("div");
+    stats.className = "stats";
+    stats.hidden = true;
+    stats.innerHTML = card.stats.map(row => "<div class='row'><span>" + row[0] + "</span><b>" + row[1] + "</b></div>").join("");
+    view.onclick = () => { stats.hidden = !stats.hidden; view.textContent = stats.hidden ? "View" : "Hide stats"; };
+    actions.appendChild(use);
+    actions.appendChild(view);
+    if (card.id !== "energy" && card.id !== "data" && card.id !== "scout" && card.id !== "defender" && card.id !== "attacker" && card.id !== "artillery") {
+      const sendBtn = document.createElement("button");
+      sendBtn.type = "button"; sendBtn.textContent = "Send";
+      const askBtn = document.createElement("button");
+      askBtn.type = "button"; askBtn.textContent = "Ask a friend";
+      const picks = document.createElement("div");
+      picks.className = "asks";
+      picks.hidden = true;
+      sendBtn.onclick = () => {
+        picks.hidden = false;
+        picks.innerHTML = "";
+        if (countOf(card.id) <= 1) {
+          picks.textContent = "You can send only when you hold more than one.";
+          return;
+        }
+        friendNames().forEach(name => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = name;
+          b.onclick = () => {
+            const code = send(card.id);
+            note.textContent = code ? "Sent toward " + name + ". Give them " + code : "You need a spare.";
+            openCascade(openKind);
+          };
+          picks.appendChild(b);
+        });
+      };
+      askBtn.onclick = () => {
+        picks.hidden = false;
+        picks.innerHTML = "";
+        friendNames().forEach(name => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = "Ask " + name;
+          b.onclick = () => {
+            const code = askCard(card.id, name);
+            note.textContent = "Ask code for " + name + ": " + code + ". They add it under Friend requests.";
+          };
+          picks.appendChild(b);
+        });
+      };
+      actions.appendChild(sendBtn);
+      actions.appendChild(askBtn);
+      box.appendChild(h); box.appendChild(p); box.appendChild(actions); box.appendChild(picks); box.appendChild(stats); box.appendChild(note);
+    } else {
+      box.appendChild(h); box.appendChild(p); box.appendChild(actions); box.appendChild(stats); box.appendChild(note);
+    }
+    const wants = (meta().requests || []).filter(r => r.status === "open" && r.dir === "in" && r.cardId === card.id);
+    if (wants.length) {
+      const w = document.createElement("p");
+      w.className = "muted";
+      w.textContent = wants.map(r => r.from + " is asking for this.").join(" ");
+      box.appendChild(w);
+    }
+    box.scrollIntoView({ block: "nearest" });
+  }
   function openCascade(kind) {
+    openKind = kind;
     const sheet = document.getElementById("cascade");
     if (!sheet) return;
     sheet.hidden = false;
@@ -366,63 +613,36 @@
     const head = document.createElement("div");
     head.className = "row";
     head.innerHTML = "<b>" + (kind === "power" ? "Power deck" : "Unit deck") + "</b>";
+    const req = document.createElement("button");
+    req.className = "ghost"; req.type = "button"; req.textContent = "Requests";
     const close = document.createElement("button");
     close.className = "ghost"; close.type = "button"; close.textContent = "Close";
     close.onclick = () => { sheet.hidden = true; };
-    head.appendChild(close);
+    head.appendChild(req); head.appendChild(close);
     sheet.appendChild(head);
-    const rain = document.createElement("div");
-    rain.className = "rain";
-    const backs = kind === "power" ? 36 : 8;
-    for (let i = 0; i < backs; i++) {
-      const back = document.createElement("i");
-      back.className = "back fall";
-      back.style.setProperty("--i", String(i));
-      back.style.setProperty("--r", ((i % 7) - 3) + "deg");
-      rain.appendChild(back);
-    }
-    sheet.appendChild(rain);
+    const detail = document.createElement("div");
+    detail.className = "detail";
+    detail.id = "cardDetail";
+    detail.hidden = true;
+    sheet.appendChild(detail);
+    const reqBox = document.createElement("div");
+    reqBox.className = "detail";
+    reqBox.hidden = true;
+    req.onclick = () => { reqBox.hidden = !reqBox.hidden; if (!reqBox.hidden) paintRequests(reqBox); };
+    sheet.appendChild(reqBox);
     const grid = document.createElement("div");
     grid.className = "casgrid";
-    if (kind === "power") paintPower(grid); else paintUnits(grid);
+    const cards = kind === "power" ? powerCards() : unitCards();
+    cards.forEach((card, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ccard fall" + (card.ready ? "" : " locked") + (card.gold ? " gold" : "");
+      b.style.setProperty("--i", String(Math.min(i, 14)));
+      b.innerHTML = "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>";
+      b.onclick = () => showDetail(card);
+      grid.appendChild(b);
+    });
     sheet.appendChild(grid);
-  }
-  function paintPower(grid) {
-    const m = meta();
-    const S = Game.S;
-    const live = [
-      { name: "Energy", line: "Builds units.", num: S.energy.player, extra: "+" + (document.getElementById("energyNext").textContent || "") },
-      { name: "Data", line: "Repairs only.", num: S.data.player, extra: "+" + (document.getElementById("dataNext").textContent || "") }
-    ];
-    live.forEach((card, i) => grid.appendChild(face(card.name, card.line, card.num + "  " + card.extra, true, i)));
-    utilities.slice(0, m.utilities).forEach((u, i) => grid.appendChild(face(u[1], u[2], "Earned", true, i + 2)));
-    const locked = utilities.length - m.utilities;
-    const note = document.createElement("p");
-    note.className = "muted";
-    note.textContent = locked + " power cards are still in the forge. Capture land to earn the next one. " + (120 - m.utilities) + " sealed cards sit behind these.";
-    grid.appendChild(note);
-  }
-  function paintUnits(grid) {
-    const S = Game.S;
-    const order = ["scout", "defender", "attacker", "artillery"].map(k => Object.assign({ kind: k }, Game.STATS[k])).sort((a, b) => {
-      const aa = S.energy.player >= a.cost ? 0 : 1;
-      const bb = S.energy.player >= b.cost ? 0 : 1;
-      return aa - bb || a.cost - b.cost;
-    });
-    order.forEach((st, i) => {
-      const ready = S.energy.player >= st.cost && S.phase === "play";
-      const node = face(st.name, st.short, st.cost + " Energy", ready, i);
-      node.onclick = () => { if (S.phase === "play") { Game.build(st.kind); document.getElementById("cascade").hidden = true; } };
-      grid.appendChild(node);
-    });
-  }
-  function face(name, line, foot, ready, i) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "ccard fall" + (ready ? "" : " locked");
-    b.style.setProperty("--i", String(i));
-    b.innerHTML = "<b>" + name + "</b><span>" + line + "</span><span class='muted'>" + foot + "</span>";
-    return b;
   }
 
   document.getElementById("powerDeckBtn").onclick = () => openCascade("power");
