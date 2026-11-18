@@ -247,10 +247,10 @@
     <div class="top">
       <div class="royals">
         <button class="royal" id="unitDeckBtn" type="button" aria-label="Units">
-          <video autoplay muted loop playsinline poster="media/card-queen.jpg"><source src="media/vid-queen.mp4?v=move" type="video/mp4"></video>
+          <video autoplay muted loop playsinline poster="media/card-queen.jpg"><source src="media/vid-queen.mp4?v=dance" type="video/mp4"></video>
         </button>
         <button class="royal" id="powerDeckBtn" type="button" aria-label="Power">
-          <video autoplay muted loop playsinline poster="media/card-king.jpg"><source src="media/vid-king.mp4?v=move" type="video/mp4"></video>
+          <video autoplay muted loop playsinline poster="media/card-king.jpg"><source src="media/vid-king.mp4?v=dance" type="video/mp4"></video>
         </button>
       </div>
       <a class="mark foldbit" href="https://futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/futuret3ch-mark.png" alt="Futuret3Ch"></a>
@@ -832,7 +832,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=x"></script>
+<script src="decks.js?v=dance"></script>
 <script src="shell.js?v=x"></script>
 </body>
 </html>

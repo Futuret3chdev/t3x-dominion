@@ -756,7 +756,7 @@
     const ready = own && Game.S && Game.S.energy.player >= st.cost && Game.S.phase === "play";
     const art = "media/card-" + id + ".jpg";
     return {
-      id, name, art, video: ["scout", "defender", "attacker", "artillery"].indexOf(id) >= 0 ? "media/vid-" + id + ".mp4" : "",
+      id, name, art, video: ["scout", "defender", "attacker", "artillery", "queen", "king"].indexOf(id) >= 0 ? "media/vid-" + id + ".mp4" : "",
       glyph: st.glyph || id, kicker, countLabel: own ? n + " on the map" : (t3x ? t3x + " T3X" : "Locked"),
       ready, explain: role, t3x,
       stats: [["On the map", n], ["Field cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move], ["T3X", t3x || "—"]],
@@ -902,7 +902,7 @@
       img.setAttribute("playsinline", "");
       img.setAttribute("webkit-playsinline", "");
       img.poster = card.art || "";
-      img.src = card.video + "?v=sound";
+      img.src = card.video + "?v=dance";
       const started = img.play();
       if (started && started.catch) started.catch(function () {});
       const prev = document.createElement("button");
