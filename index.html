@@ -72,7 +72,13 @@
   .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
   @media (max-width: 959px) {
     header { padding: 6px 10px 8px; }
-    h1 { font-size: 16px; }
+    .top { flex-wrap: wrap; gap: 6px; }
+    .tools { width: 100%; margin-left: 0; }
+    h1 { font-size: 18px; white-space: nowrap; }
+    .sub { white-space: nowrap; font-size: 12px; }
+    .ghost { min-height: 36px; padding: 0 10px; }
+    .iconbtn { width: 36px; height: 36px; }
+    .mark, .mark img { width: 28px; height: 28px; }
     .legend, .mid { display: none; }
     .scores { margin-top: 4px; }
     .say { margin-top: 6px; padding: 6px 8px; font-size: 13px; }
@@ -111,10 +117,15 @@
   video.trailer { width: 100%; border-radius: 12px; background: #000; }
   @media (max-width: 959px) {
     #zoomBtn, #helpBtn { display: none; }
-    .cards { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; max-height: 42vh; }
+    .board-wrap { order: 1; }
+    .cards { position: static; order: 2; flex: none; max-height: none; overflow: visible; border-bottom: 0; border-top: 1px solid var(--line); }
+    .dock { order: 3; }
+    .cards-row { overflow-x: auto; }
+    .gcard { width: 104px; }
+    .gcard img { height: 88px; }
   }
   @media (min-width: 960px) {
-    .cards { max-height: none; width: 168px; border-bottom: 0; border-right: 1px solid var(--line); }
+    .cards { order: 0; max-height: none; width: 168px; border-bottom: 0; border-right: 1px solid var(--line); }
     .cards-row { flex-direction: column; }
     .gcard { width: 100%; }
   }
