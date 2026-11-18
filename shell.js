@@ -20,22 +20,42 @@
   }
   function writeSaves(rows) { localStorage.setItem(SAVE_KEY, JSON.stringify(rows)); }
 
+  const TRACKS = [
+    { src: "media/in-flight.mp3", title: "In Flight" },
+    { src: "media/where-we-belong.mp3", title: "Where We Belong" },
+    { src: "media/there-be-dragons.mp3", title: "There Be Dragons" }
+  ];
+  let music = null, track = 0;
+  function playTrack(i) {
+    track = ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
+    if (!music) {
+      music = new Audio();
+      music.preload = "auto";
+      music.volume = 0.55;
+      music.addEventListener("ended", () => playTrack(track + 1));
+    }
+    music.src = TRACKS[track].src;
+    music.muted = muted;
+    if (paused) return;
+    const pending = music.play();
+    if (pending) pending.catch(function () {});
+  }
   function ensureAudio() {
-    if (ctx) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    ctx = new AC();
-    master = ctx.createGain();
-    master.gain.value = 0.07;
-    master.connect(ctx.destination);
-    const a = ctx.createOscillator();
-    const b = ctx.createOscillator();
-    const g = ctx.createGain();
-    a.type = "sine"; b.type = "triangle";
-    a.frequency.value = 92; b.frequency.value = 138;
-    g.gain.value = 0.35;
-    a.connect(g); b.connect(g); g.connect(master);
-    a.start(); b.start();
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.2;
+        master.connect(ctx.destination);
+      }
+    }
+    if (ctx && ctx.state === "suspended" && !paused) ctx.resume();
+    if (!music) playTrack(track);
+    else if (!paused && music.paused) {
+      const pending = music.play();
+      if (pending) pending.catch(function () {});
+    }
   }
   window.sfx = function (kind) {
     if (!ctx || muted || paused) return;
@@ -50,13 +70,21 @@
   };
   function setMute(on) {
     muted = on;
-    if (master) master.gain.value = muted || paused ? 0 : 0.07;
+    if (master) master.gain.value = muted || paused ? 0 : 0.2;
+    if (music) music.muted = muted;
     document.getElementById("muteBtn").textContent = muted ? "×" : "♪";
   }
   function setPause(on) {
     paused = on;
     if (ctx) on ? ctx.suspend() : ctx.resume();
-    if (master && !on) master.gain.value = muted ? 0 : 0.07;
+    if (master && !on) master.gain.value = muted ? 0 : 0.2;
+    if (music) {
+      if (on) music.pause();
+      else if (!muted) {
+        const pending = music.play();
+        if (pending) pending.catch(function () {});
+      }
+    }
     document.getElementById("pauseBtn").textContent = paused ? "▶" : "II";
   }
 
@@ -162,9 +190,10 @@
       body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Multiplayer</h2><div class="stack"><button type="button" id="hotseat"><b>Pass and play</b><span class="muted" style="display:block">Two people, one phone. Teal, then crimson.</span></button><button type="button" disabled><b>Online rooms</b><span class="soon" style="display:block">Coming soon</span></button></div>';
       body.querySelector("#hotseat").onclick = () => newBattle(true);
     } else if (screen === "settings") {
-      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Settings</h2><p>Social connect</p><div class="socials"><button type="button" data-soon="x" aria-label="X">' + icons.x + '</button><button type="button" data-soon="fb" aria-label="Facebook">' + icons.fb + '</button><button type="button" data-soon="ig" aria-label="Instagram">' + icons.ig + '</button></div><p class="soon" id="soonNote">Coming soon — connect is not live yet.</p><div class="stack"><button type="button" id="musicToggle">Music ' + (paused ? "off" : "on") + '</button><button type="button" id="muteToggle">Sound ' + (muted ? "off" : "on") + '</button></div>';
+      body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Settings</h2><p>Music</p><p class="muted" id="nowPlaying">Playing ' + TRACKS[track].title + '. The three tracks loop.</p><div class="stack"><button type="button" id="musicToggle">Music ' + (paused ? "off" : "on") + '</button><button type="button" id="nextTrack">Next track</button><button type="button" id="muteToggle">Sound ' + (muted ? "off" : "on") + '</button></div><p>Social connect</p><div class="socials"><button type="button" data-soon="x" aria-label="X">' + icons.x + '</button><button type="button" data-soon="fb" aria-label="Facebook">' + icons.fb + '</button><button type="button" data-soon="ig" aria-label="Instagram">' + icons.ig + '</button></div><p class="soon" id="soonNote">Coming soon — connect is not live yet.</p>';
       body.querySelectorAll("[data-soon]").forEach(b => b.onclick = () => { document.getElementById("soonNote").textContent = "Coming soon. " + b.getAttribute("aria-label") + " connect is not switched on yet."; });
-      body.querySelector("#musicToggle").onclick = () => { setPause(!paused); render("settings"); };
+      body.querySelector("#musicToggle").onclick = () => { ensureAudio(); setPause(!paused); render("settings"); };
+      body.querySelector("#nextTrack").onclick = () => { ensureAudio(); playTrack(track + 1); render("settings"); };
       body.querySelector("#muteToggle").onclick = () => { setMute(!muted); render("settings"); };
     } else if (screen === "community") {
       body.innerHTML = '<button class="ghost" type="button" data-go="home">Back</button><h2>Community</h2>'
