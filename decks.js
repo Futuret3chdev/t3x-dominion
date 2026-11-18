@@ -190,6 +190,86 @@
     ["power-coin", "Oath Coin", "A promise worth 1 T3X later."]
   ];
 
+  const fieldUnits = [
+    ["runner", "Runner", 4, 18, 30, 8, 1, 3, "scout", "Walks 3. Faster than a Scout, and easier to lose."],
+    ["squire", "Squire", 5, 25, 55, 14, 1, 1, "blade", "A short sword and a short reach. Cheap practice for the line."],
+    ["pikeman", "Pikeman", 6, 30, 60, 18, 1, 1, "blade", "Holds the next hex with a longer hit than a Squire."],
+    ["spotter", "Spotter", 7, 28, 35, 10, 2, 2, "gun", "Walks 2 and shoots 2. The shot is light."],
+    ["bearer", "Banner Bearer", 8, 32, 50, 8, 1, 2, "banner", "Walks 2. Weak hit, hard to ignore. The line follows."],
+    ["shieldman", "Shieldman", 9, 40, 130, 8, 1, 1, "wall", "Thicker than a Defender. Almost no punch."],
+    ["skirmisher", "Skirmisher", 10, 38, 48, 16, 1, 2, "scout", "Walks 2 and hits harder than a Scout."],
+    ["sapper", "Sapper", 12, 36, 45, 14, 1, 1, "blade", "Takes a hex apart up close. Do not leave it alone."],
+    ["outrider", "Outrider", 14, 42, 55, 18, 1, 3, "horse", "Walks 3. The grab after the Runner."],
+    ["crossbow", "Crossbow", 16, 48, 45, 22, 2, 1, "gun", "Shoots 2 hexes for 22. Keep a wall in front."],
+    ["warden", "Warden", 18, 55, 140, 12, 1, 1, "wall", "A named wall. Health 140, a small hit."],
+    ["raider", "Raider", 20, 52, 60, 24, 1, 2, "horse", "Walks 2 and hits for 24."],
+    ["mortar", "Mortar", 22, 70, 40, 30, 2, 1, "gun", "Lobs 30 damage two hexes away. Fragile."],
+    ["vanguard", "Vanguard", 24, 60, 80, 26, 1, 1, "blade", "The step before a Knight. Hits for 26."],
+    ["medicant", "Field Chaplain", 26, 44, 50, 6, 1, 2, "banner", "Walks 2. Almost no damage. A marker you can afford to lose."],
+    ["siege", "Siege Crew", 28, 75, 55, 32, 2, 1, "gun", "Shoots 32 from two hexes."],
+    ["knight", "Knight", 30, 80, 100, 30, 1, 1, "blade", "Health 100, hits for 30, must stand next to them."],
+    ["standard", "Standard", 33, 68, 90, 16, 1, 1, "banner", "A heavy banner. Hard to shift, modest hit."],
+    ["bombard", "Bombard", 36, 90, 48, 40, 2, 1, "gun", "The loud gun. 40 damage, two hexes, thin health."],
+    ["marshal", "Marshal", 40, 100, 120, 28, 1, 1, "blade", "The last field command. Health 120, hits for 28."]
+  ];
+  const specials = [
+    ["ironwarden", "Iron Warden", 50, 80, 180, 18, 1, 1, "wall", "Bought for 50 T3X. A wall the line does not get for free."],
+    ["duskrider", "Dusk Rider", 80, 70, 70, 26, 1, 3, "horse", "Bought for 80 T3X. Walks 3 and hits for 26."],
+    ["glasscannon", "Glass Cannon", 120, 90, 40, 48, 2, 1, "gun", "Bought for 120 T3X. 48 damage at two hexes. It dies if they reach it."],
+    ["oathknight", "Oath Knight", 200, 110, 150, 34, 1, 1, "blade", "Bought for 200 T3X. Health 150, hits for 34 up close."],
+    ["siegesaint", "Siege Saint", 350, 120, 90, 42, 2, 1, "gun", "Bought for 350 T3X. A blessed gun. 42 damage, two hexes."],
+    ["highgate", "Highgate Ram", 500, 140, 160, 36, 1, 1, "wall", "Bought for 500 T3X. The fortress breaker. Health 160."],
+    ["dreadbreaker", "Dread Breaker", 750, 160, 140, 50, 2, 1, "gun", "Bought for 750 T3X. Shoots 50 from two hexes."],
+    ["accordender", "Accord-Ender", 1000, 200, 200, 55, 2, 1, "blade", "Bought for 1000 T3X. Health 200. Hits for 55, two hexes out."]
+  ];
+  function rowUnit(row, special) {
+    return { id: row[0], name: row[1], need: special ? 0 : row[2], t3x: special ? row[2] : 0, cost: row[3], hp: row[4], atk: row[5], range: row[6], move: row[7], glyph: row[8], role: row[9], short: row[9] };
+  }
+  function installUnits() {
+    fieldUnits.forEach(row => {
+      const u = rowUnit(row, false);
+      Game.STATS[u.id] = { name: u.name, cost: u.cost, hp: u.hp, atk: u.atk, range: u.range, move: u.move, role: u.role, short: "Hold " + u.need + " hexes", glyph: u.glyph };
+    });
+    specials.forEach(row => {
+      const u = rowUnit(row, true);
+      Game.STATS[u.id] = { name: u.name, cost: u.cost, hp: u.hp, atk: u.atk, range: u.range, move: u.move, role: u.role, short: u.t3x + " T3X", glyph: u.glyph };
+    });
+  }
+  function syncRoster() {
+    const m = meta();
+    if (!m.roster) m.roster = [];
+    if (!m.specials) m.specials = {};
+    let held = m.bestLand || 0;
+    if (Game.S) held = Math.max(held, Object.values(Game.S.tiles).filter(t => t.owner === "player").length);
+    m.bestLand = held;
+    fieldUnits.forEach(row => {
+      if (held >= row[2] && m.roster.indexOf(row[0]) < 0) {
+        m.roster.push(row[0]);
+        if (Game.S) Game.S.flash = row[1] + " joined the unit deck.";
+      }
+    });
+    save(m);
+  }
+  function ownsUnit(id) {
+    if (["scout", "defender", "attacker", "artillery"].indexOf(id) >= 0) return true;
+    const m = meta();
+    if (specials.some(s => s[0] === id)) return !!(m.specials && m.specials[id]);
+    return ((m.roster) || []).indexOf(id) >= 0;
+  }
+  function buySpecial(id) {
+    const row = specials.find(s => s[0] === id);
+    if (!row) return "Missing unit.";
+    const m = meta();
+    if (!m.specials) m.specials = {};
+    if (m.specials[id]) return "You already hold " + row[1] + ".";
+    const cost = row[2];
+    if ((m.t3xHeld || 0) < cost) return "You need " + cost + " T3X. You hold " + (m.t3xHeld || 0) + ".";
+    m.t3xHeld -= cost;
+    m.specials[id] = 1;
+    save(m);
+    return row[1] + " is yours. Field it for " + row[3] + " Energy.";
+  }
+
   function allCards() {
     const out = [];
     decks.forEach(d => d.collections.forEach(c => c.cards.forEach(card => {
@@ -255,6 +335,7 @@
     }
     save(m);
     stampMissions();
+    syncRoster();
     let got = null;
     if (m.captures % 2 === 0) got = grantNext();
     checkPrizes();
@@ -449,12 +530,46 @@
   }
   function unitCards() {
     const S = Game.S;
-    return ["scout", "defender", "attacker", "artillery"].map(k => {
-      const st = Object.assign({ kind: k }, Game.STATS[k]);
-      const n = unitCount(k);
-      const ready = S.energy.player >= st.cost && S.phase === "play";
-      return { id: k, name: st.name, art: "media/card-" + k + ".jpg", video: "media/vid-" + k + ".mp4", kicker: st.cost + " Energy", countLabel: n + " on the map", ready, explain: st.role, stats: [["You have on the map", n], ["Cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move]], use: () => { Game.build(k); document.getElementById("cascade").hidden = true; return "Tap your land to place the " + st.name + "."; } };
-    }).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
+    const base = ["scout", "defender", "attacker", "artillery"].map(k => {
+      const st = Game.STATS[k];
+      return cardFrom(k, st.name, st.cost + " Energy", st.role, true, 0);
+    });
+    const earned = fieldUnits.map(row => {
+      const own = ownsUnit(row[0]);
+      return cardFrom(row[0], row[1], own ? row[3] + " Energy" : "Hold " + row[2] + " hexes", row[9], own, 0);
+    });
+    const bought = specials.map(row => {
+      const own = ownsUnit(row[0]);
+      return cardFrom(row[0], row[1], own ? row[3] + " Energy" : row[2] + " T3X", row[9], own, row[2]);
+    });
+    return base.concat(earned, bought).sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
+  }
+  function cardFrom(id, name, kicker, role, own, t3x) {
+    const st = Game.STATS[id];
+    const n = unitCount(id);
+    const ready = own && Game.S && Game.S.energy.player >= st.cost && Game.S.phase === "play";
+    const art = "media/card-" + id + ".jpg";
+    return {
+      id, name, art, video: ["scout", "defender", "attacker", "artillery"].indexOf(id) >= 0 ? "media/vid-" + id + ".mp4" : "",
+      glyph: st.glyph || id, kicker, countLabel: own ? n + " on the map" : (t3x ? t3x + " T3X" : "Locked"),
+      ready, explain: role, t3x,
+      stats: [["On the map", n], ["Field cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move], ["T3X", t3x || "—"]],
+      use: () => {
+        if (!own && t3x) {
+          const msg = buySpecial(id);
+          if (ownsUnit(id)) showDetail(unitCards().find(c => c.id === id));
+          return msg;
+        }
+        if (!own) return name + " is still in the field. Hold the hexes shown on the card.";
+        Game.build(id);
+        const sheet = document.getElementById("cascade");
+        if (sheet) sheet.hidden = true;
+        const view = document.getElementById("viewer");
+        if (view) view.hidden = true;
+        if (window.DominionCards) DominionCards.sync();
+        return "Tap your land to place the " + name + ".";
+      }
+    };
   }
   function friendNames() {
     const m = meta();
@@ -595,6 +710,30 @@
         const dx = e.changedTouches[0].clientX - startX;
         if (Math.abs(dx) > 36) stepCard(dx < 0 ? 1 : -1);
       }, { passive: true });
+      stage.appendChild(img); stage.appendChild(prev); stage.appendChild(next);
+      box.appendChild(stage);
+    } else if (card.art) {
+      const stage = document.createElement("div");
+      stage.className = "gifstage";
+      const img = document.createElement("img");
+      img.className = "cardgif drift";
+      img.alt = "";
+      img.src = card.art;
+      img.onerror = function () {
+        img.onerror = null;
+        const fall = { scout: "scout", wall: "defender", blade: "attacker", gun: "artillery", horse: "scout", banner: "defender" };
+        img.src = "media/card-" + (fall[card.glyph] || "scout") + ".jpg";
+      };
+      const sting = new Audio("media/vid-energy.mp4?v=sound");
+      sting.volume = 0.45;
+      const started = sting.play();
+      if (started && started.catch) started.catch(function () {});
+      const prev = document.createElement("button");
+      prev.type = "button"; prev.className = "gifnav prev"; prev.setAttribute("aria-label", "Previous card"); prev.textContent = "‹";
+      const next = document.createElement("button");
+      next.type = "button"; next.className = "gifnav next"; next.setAttribute("aria-label", "Next card"); next.textContent = "›";
+      prev.onclick = function (e) { e.stopPropagation(); stepCard(-1); };
+      next.onclick = function (e) { e.stopPropagation(); stepCard(1); };
       stage.appendChild(img); stage.appendChild(prev); stage.appendChild(next);
       box.appendChild(stage);
     }
@@ -744,7 +883,18 @@
       if (card) showDetail(card);
       syncHud();
     },
+    canField: ownsUnit,
+    fieldReason: function (kind) {
+      const s = specials.find(row => row[0] === kind);
+      if (s && !ownsUnit(kind)) return s[1] + " costs " + s[2] + " T3X. Buy it from the unit deck.";
+      const f = fieldUnits.find(row => row[0] === kind);
+      if (f && !ownsUnit(kind)) return f[1] + " joins when you hold " + f[2] + " hexes.";
+      return "Not unlocked.";
+    },
+    listUnits: unitCards,
     sync: syncHud
   };
+  installUnits();
+  syncRoster();
   meta();
 })();

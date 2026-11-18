@@ -368,7 +368,6 @@
     const units = document.getElementById("unitRow");
     const powers = document.getElementById("powerRow");
     tray.hidden = false;
-    if (units.childElementCount) { if (window.DominionCards) DominionCards.sync(); return; }
     const card = (id, name, line, art) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -377,12 +376,19 @@
       btn.onclick = () => { if (window.DominionCards) DominionCards.open(id); };
       return btn;
     };
-    [["scout", "Scout", "20 Energy · walks 2"], ["defender", "Defender", "35 · holds a hex"], ["attacker", "Attacker", "50 · hits for 28"], ["artillery", "Artillery", "65 · shoots 2"]].forEach(([id, name, line]) => {
-      units.appendChild(card(id, name, line, "media/card-" + id + ".jpg"));
-    });
-    [["energy", "Energy", "Builds units", "energy"], ["data", "Data", "Repairs only", "data"], ["power-ration", "Field Ration", "Power", "ration"], ["power-scrap", "Scrap Charge", "Power", "scrap"], ["power-relay", "Relay Tap", "Power", "relay"], ["power-oil", "Night Oil", "Power", "oil"], ["power-barrel", "Spare Barrel", "Power", "barrel"], ["power-map", "Map Scrap", "Power", "map"], ["power-cloth", "Banner Cloth", "Power", "cloth"], ["power-coal", "Forge Coal", "Power", "coal"], ["power-flare", "Signal Flare", "Power", "flare"], ["power-medic", "Medic Kit", "Power", "medic"], ["power-pin", "Siege Pin", "Power", "pin"], ["power-coin", "Oath Coin", "Power", "coin"]].forEach(([id, name, line, art]) => {
-      powers.appendChild(card(id, name, line, "media/card-" + art + ".jpg"));
-    });
+    units.innerHTML = "";
+    const listed = (window.DominionCards && DominionCards.listUnits) ? DominionCards.listUnits() : [
+      { id: "scout", name: "Scout", kicker: "20 Energy", art: "media/card-scout.jpg" },
+      { id: "defender", name: "Defender", kicker: "35 Energy", art: "media/card-defender.jpg" },
+      { id: "attacker", name: "Attacker", kicker: "50 Energy", art: "media/card-attacker.jpg" },
+      { id: "artillery", name: "Artillery", kicker: "65 Energy", art: "media/card-artillery.jpg" }
+    ];
+    listed.forEach(u => units.appendChild(card(u.id, u.name, u.kicker, u.art)));
+    if (!powers.childElementCount) {
+      [["energy", "Energy", "Builds units", "energy"], ["data", "Data", "Repairs only", "data"], ["power-ration", "Field Ration", "Power", "ration"], ["power-scrap", "Scrap Charge", "Power", "scrap"], ["power-relay", "Relay Tap", "Power", "relay"], ["power-oil", "Night Oil", "Power", "oil"], ["power-barrel", "Spare Barrel", "Power", "barrel"], ["power-map", "Map Scrap", "Power", "map"], ["power-cloth", "Banner Cloth", "Power", "cloth"], ["power-coal", "Forge Coal", "Power", "coal"], ["power-flare", "Signal Flare", "Power", "flare"], ["power-medic", "Medic Kit", "Power", "medic"], ["power-pin", "Siege Pin", "Power", "pin"], ["power-coin", "Oath Coin", "Power", "coin"]].forEach(([id, name, line, art]) => {
+        powers.appendChild(card(id, name, line, "media/card-" + art + ".jpg"));
+      });
+    }
     if (window.DominionCards) DominionCards.sync();
   }
 

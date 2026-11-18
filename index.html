@@ -189,7 +189,8 @@
   .viewer[hidden] { display: none !important; }
   .viewer .gifstage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .viewer .cardgif { width: auto; max-width: 100%; height: auto; max-height: 100%; object-fit: contain; display: block; }
-  .viewerest { flex: 0 0 auto; overflow: hidden; }
+  @keyframes drift { 50% { transform: scale(1.05); } }
+  .drift { animation: drift 5s ease-in-out infinite; transform-origin: center; }
   .gifnav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: rgba(7,9,12,.72); color: #fff; font-size: 22px; line-height: 1; }
   .gifnav.prev { left: 6px; }
   .gifnav.next { right: 6px; }
@@ -594,6 +595,8 @@ function build(kind) {
   if (S.buildKind === kind) { S.buildKind = null; draw(); return; }
   const side = actor();
   const st = STATS[kind];
+  if (!st) return;
+  if (window.DominionCards && !DominionCards.canField(kind)) { flash(DominionCards.fieldReason(kind)); draw(); return; }
   if (S.energy[side] < st.cost) { flash(st.name + " costs " + st.cost + " Energy. You have " + S.energy[side] + "."); draw(); return; }
   if (!Object.values(S.tiles).some(t => t.owner === side && !t.unitId)) { flash("No empty hex on this side. Move a unit, or capture land first."); draw(); return; }
   S.buildKind = kind; S.selectedId = null; draw();
@@ -644,9 +647,11 @@ function shape(kind, x, y, color) {
   g.setAttribute("transform", "translate(" + (x - 11) + " " + (y - 14) + ") scale(0.69)");
   g.setAttribute("fill", color); g.setAttribute("stroke", color);
   const add = (tag, attrs) => { const n = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) n.setAttribute(k, attrs[k]); g.appendChild(n); };
-  if (kind === "scout") add("polygon", { points: "16,3 29,28 3,28" });
-  else if (kind === "defender") add("path", { d: "M16 2 L28 8 V16 C28 24 16 30 16 30 C16 30 4 24 4 16 V8 Z" });
-  else if (kind === "attacker") add("polygon", { points: "16,1 19.5,12.5 31,16 19.5,19.5 16,31 12.5,19.5 1,16 12.5,12.5" });
+  const mark = (STATS[kind] && STATS[kind].glyph) || kind;
+  if (mark === "scout" || mark === "horse") add("polygon", { points: "16,3 29,28 3,28" });
+  else if (mark === "defender" || mark === "wall") add("path", { d: "M16 2 L28 8 V16 C28 24 16 30 16 30 C16 30 4 24 4 16 V8 Z" });
+  else if (mark === "attacker" || mark === "blade") add("polygon", { points: "16,1 19.5,12.5 31,16 19.5,19.5 16,31 12.5,19.5 1,16 12.5,12.5" });
+  else if (mark === "banner") { add("path", { d: "M8 3 V29", fill: "none", "stroke-width": 3 }); add("path", { d: "M8 4 H24 L20 10 H8 Z" }); }
   else { add("circle", { cx: 16, cy: 16, r: 8, fill: "none", "stroke-width": 3 }); add("circle", { cx: 16, cy: 16, r: 2.5 }); add("path", { d: "M16 1.5 V7 M16 25 V30.5 M1.5 16 H7 M25 16 H30.5", fill: "none", "stroke-width": 2.4, "stroke-linecap": "round" }); }
   return g;
 }
@@ -771,7 +776,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=sound"></script>
-<script src="shell.js?v=sound"></script>
+<script src="decks.js?v=units"></script>
+<script src="shell.js?v=units"></script>
 </body>
 </html>
