@@ -18,7 +18,8 @@
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font-family: "IBM Plex Sans", system-ui, sans-serif; }
-  button { font: inherit; color: inherit; cursor: pointer; }
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; }
+  .actions button, .asks button { min-height: 40px; border-radius: 999px; border: 1px solid #3a4c5a; background: #172028; color: #f4f7f8; padding: 0 14px; }
   button:disabled { cursor: default; opacity: 0.5; }
   .app { height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   header { border-bottom: 1px solid var(--line); background: var(--surface); padding: 8px 12px 10px; }
@@ -770,7 +771,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=fit"></script>
-<script src="shell.js?v=fit"></script>
+<script src="decks.js?v=play"></script>
+<script src="shell.js?v=play"></script>
 </body>
 </html>
