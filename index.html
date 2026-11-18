@@ -49,8 +49,9 @@
   .card ol { margin: 12px 0; padding-left: 18px; font-size: 14px; line-height: 1.4; }
   .card li { margin: 8px 0; }
   .go { width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--player); color: var(--bg); font-family: Oswald, sans-serif; font-size: 20px; letter-spacing: 0.04em; }
-  .dock { max-height: 42vh; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); background: var(--surface); padding: 10px 12px 12px; }
+  .dock { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); background: var(--surface); padding: 10px 12px 12px; flex-shrink: 0; }
   .scroll { overflow: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .end { flex-shrink: 0; min-height: 52px; border: 0; border-radius: 12px; background: var(--player); color: var(--bg); text-align: left; padding: 8px 12px; }
   .grid2 { display: grid; grid-cols: 2; grid-template-columns: 1fr 1fr; gap: 8px; }
   .box { background: var(--bg); border-radius: 12px; padding: 8px 10px; }
   .box p { margin: 0; }
@@ -61,7 +62,6 @@
   .unitbtn { min-height: 44px; text-align: left; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); padding: 8px; }
   .unitbtn.on { border-color: var(--player); background: var(--player-dim); }
   .unitbtn b { display: block; font-size: 14px; }
-  .end { min-height: 52px; border: 0; border-radius: 12px; background: var(--player); color: var(--bg); text-align: left; padding: 8px 12px; }
   .end strong { font-family: Oswald, sans-serif; font-size: 18px; letter-spacing: 0.04em; display: block; }
   .log { margin: 0; padding: 0; list-style: none; font-size: 13px; }
   .log li { margin: 4px 0; }
@@ -76,8 +76,9 @@
     .legend, .mid { display: none; }
     .scores { margin-top: 4px; }
     .say { margin-top: 6px; padding: 6px 8px; font-size: 13px; }
-    .board-wrap { min-height: 48vh; }
-    .dock { max-height: 26vh; padding: 8px 10px; }
+    .board-wrap { min-height: 0; }
+    .scroll { max-height: 108px; }
+    .dock { max-height: none; padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px)); }
     .card { padding: 12px; }
     .card h2 { font-size: 24px; }
     .card ol { display: none; }
