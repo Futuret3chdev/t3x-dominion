@@ -824,14 +824,15 @@
           return msg;
         }
         if (!own) return name + " is still in the field. Hold the hexes shown on the card.";
-        Game.build(id);
+        const msg = Game.drop ? Game.drop(id) : "";
+        if (msg) return msg;
         if (id === "queen" || id === "king") markRoyals(id);
         const sheet = document.getElementById("cascade");
         if (sheet) sheet.hidden = true;
         const view = document.getElementById("viewer");
         if (view) view.hidden = true;
         if (window.DominionCards) DominionCards.sync();
-        return "Tap your land to place the " + name + ".";
+        return "The " + name + " is on your land.";
       }
     };
   }
@@ -1134,6 +1135,14 @@
       b.style.setProperty("--i", String(Math.min(i, 14)));
       b.innerHTML = (card.art ? '<img alt="" src="' + card.art + '">' : "") + "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>" + (picked ? "<span class='pickedtag'>Selected</span>" : "");
       b.onclick = () => {
+        if (kind === "units" && card.ready && Game.drop) {
+          const msg = Game.drop(card.id);
+          if (!msg) {
+            sheet.hidden = true;
+            markRoyals(card.id === "king" || card.id === "queen" ? card.id : "queen");
+            return;
+          }
+        }
         if (royal) {
           grid.querySelectorAll(".ccard.picked").forEach(function (n) { n.classList.remove("picked"); const tag = n.querySelector(".pickedtag"); if (tag) tag.remove(); });
           b.classList.add("picked");

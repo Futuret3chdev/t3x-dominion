@@ -654,6 +654,43 @@ function clickHex(q, r) {
   if (tile.unitId) { S.selectedId = tile.unitId; draw(); return; }
   S.selectedId = null; flash(describe(tile)); draw();
 }
+function drop(kind) {
+  if (S.phase === "briefing") S.phase = "play";
+  if (S.phase !== "play") return "The battle is not open.";
+  const side = actor();
+  const st = STATS[kind];
+  if (!st) return "That unit is not in this battle.";
+  if (window.DominionCards && !DominionCards.canField(kind)) return DominionCards.fieldReason(kind);
+  if (S.energy[side] < st.cost) return st.name + " costs " + st.cost + " Energy. You have " + S.energy[side] + ".";
+  const open = Object.values(S.tiles).filter(t => t.owner === side && !t.unitId);
+  if (!open.length) return "No empty hex on this side. Move a unit, or capture land first.";
+  const inspected = S.inspect && S.tiles[S.inspect];
+  let tile = inspected && inspected.owner === side && !inspected.unitId ? inspected : null;
+  if (!tile) {
+    const mine = Object.values(S.units).filter(u => u.side === side);
+    open.sort((a, b) => {
+      const da = mine.length ? Math.min.apply(null, mine.map(u => dist(u, a))) : -a.r;
+      const db = mine.length ? Math.min.apply(null, mine.map(u => dist(u, b))) : -b.r;
+      return da - db;
+    });
+    tile = open[0];
+  }
+  const id = "u" + (++S.seq);
+  S.units[id] = { id, kind, side, q: tile.q, r: tile.r, hp: st.hp, acted: false };
+  S.energy[side] -= st.cost;
+  tile.unitId = id;
+  S.selectedId = id;
+  S.buildKind = null;
+  S.attention = key(tile.q, tile.r);
+  log("Deployed a " + st.name + " on your land. Energy left: " + S.energy[side] + ".");
+  if (window.DominionCards && DominionCards.onDeploy) {
+    const extra = DominionCards.onDeploy(kind);
+    if (extra) log(extra);
+  }
+  ping("ui");
+  draw();
+  return "";
+}
 function build(kind) {
   if (S.phase === "briefing") { flash("Press Start on the brief first. You are the teal at the bottom."); draw(); return; }
   if (S.phase !== "play") return;
@@ -852,10 +889,10 @@ addEventListener("cut", (e) => { if (!e.target.closest("input, textarea")) e.pre
 addEventListener("contextmenu", (e) => { if (!e.target.closest("input, textarea")) e.preventDefault(); });
 addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) document.querySelector(".app").classList.remove("filling"); });
 addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null; S.selectedId = null; draw(); } if (e.key === "Enter" && S.phase === "play") endTurn(); });
-window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
+window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, drop, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=still"></script>
+<script src="decks.js?v=drop"></script>
 <script src="shell.js?v=cogicons"></script>
 </body>
 </html>
