@@ -287,7 +287,7 @@
         + '<div class="earn"><span>Earn 1 T3X</span><div class="earnbar"><i class="earnfill"></i></div><b class="earnread">0%</b></div>'
         + '<p class="muted">Leave the game open. A full bar takes about three weeks. At 100% this device holds 1 T3X until the vault pays it.</p>';
     } else if (screen === "trailer") {
-      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">T3X Dominion, the Futuret3Ch and T3X logos, and the T3X supported ecosystem. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4?v=brand"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4?v=brand" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">T3X Dominion, the Futuret3Ch and T3X logos, and the T3X supported ecosystem. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4?v=sound"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4?v=sound" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
     } else if (screen === "saves") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Saves</h2><p class="muted">Three slots on this device. The newest replaces the oldest.</p><button class="wide" type="button" id="saveNow">Save this battle</button><div class="stack" id="slotList"></div>';
       const list = body.querySelector("#slotList");
