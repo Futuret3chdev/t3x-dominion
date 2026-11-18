@@ -324,6 +324,14 @@
         + '<h3>My friends</h3><p class="muted">Names stay on this device. Invites are coming soon.</p>'
         + '<div class="row"><input id="friendName" placeholder="Name" style="flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 10px"><button type="button" id="addFriend">Add</button></div>'
         + '<div class="stack" id="friendList"></div>'
+        + '<h3>Giveaways</h3><p class="soon">Coming soon</p><p class="muted">Finish a task to earn an exclusive NFT card. The claim is not live yet.</p>'
+        + '<div class="stack">'
+        + '<article class="box"><b>Win a battle</b><p class="muted">Hold 31 hexes. Prize: Crown Bearer NFT.</p><p class="soon">Coming soon</p></article>'
+        + '<article class="box"><b>Field the King</b><p class="muted">Place the King during a battle. Prize: King\'s Seal NFT.</p><p class="soon">Coming soon</p></article>'
+        + '<article class="box"><b>Complete a collection</b><p class="muted">Finish any set. Prize: Oath Coin NFT.</p><p class="soon">Coming soon</p></article>'
+        + '<article class="box"><b>Fill the Earn bar</b><p class="muted">Reach 100%. Prize: Highgate Key NFT.</p><p class="soon">Coming soon</p></article>'
+        + '<article class="box"><b>Send a spare card</b><p class="muted">Give a friend a card you hold more than once. Prize: Banner Cloth NFT.</p><p class="soon">Coming soon</p></article>'
+        + '</div>'
         + '<h3>Leaderboard</h3><p class="soon">Coming soon</p>';
       body.querySelector("#reserve").onclick = () => { meta.freeScout = true; saveMeta(); render("community"); };
       body.querySelector("#addFriend").onclick = () => {

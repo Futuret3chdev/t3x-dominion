@@ -321,6 +321,13 @@
   }
   let shopTab = "units";
   let shopPick = null;
+  const nftDrops = [
+    ["crown-bearer", "Crown Bearer", "Win one battle. Hold 31 hexes."],
+    ["king", "King's Seal", "Field the King in a battle."],
+    ["coin", "Oath Coin", "Complete any collection."],
+    ["highgate", "Highgate Key", "Fill the Earn bar to 100%."],
+    ["cloth", "Banner Cloth", "Send a spare card to a friend."]
+  ];
   function mountShop(root, redraw) {
     if (!root) return;
     const m = meta();
@@ -333,7 +340,7 @@
     if (shopPick) { paintShopPick(root, redraw); return; }
     const filters = document.createElement("div");
     filters.className = "shopfilters";
-    [["units", "Units"], ["cards", "Cards"], ["supplies", "Supplies"]].forEach(function (pair) {
+    [["units", "Units"], ["cards", "Cards"], ["supplies", "Supplies"], ["nft", "NFT"]].forEach(function (pair) {
       const b = document.createElement("button");
       b.type = "button";
       b.textContent = pair[1];
@@ -365,6 +372,26 @@
         card.className = "shopcard mythic";
         card.innerHTML = '<img alt="" src="media/card-' + c.id + '.jpg"><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
         card.onclick = function () { shopPick = { kind: "card", id: c.id }; redraw(); };
+        grid.appendChild(card);
+      });
+      root.appendChild(grid);
+    } else if (shopTab === "nft") {
+      const lead = document.createElement("p");
+      lead.className = "soon";
+      lead.textContent = "Coming soon";
+      root.appendChild(lead);
+      const note = document.createElement("p");
+      note.className = "muted";
+      note.textContent = "Special NFTs are not for sale. Finish a Giveaways task in Community to earn one. Claiming is not live yet.";
+      root.appendChild(note);
+      const grid = document.createElement("div");
+      grid.className = "shopgrid";
+      nftDrops.forEach(function (drop) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "shopcard mythic";
+        card.innerHTML = '<img alt="" src="media/card-' + drop[0] + '.jpg"><div class="cap"><b>' + drop[1] + '</b><div class="price">NFT · Soon</div></div>';
+        card.onclick = function () { shopPick = { kind: "nft", id: drop[0] }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
@@ -435,6 +462,12 @@
       };
       root.appendChild(panel);
       root.appendChild(buyBtn);
+    } else if (shopPick.kind === "nft") {
+      const drop = nftDrops.find(function (d) { return d[0] === shopPick.id; });
+      const panel = document.createElement("article");
+      panel.className = "shoppick";
+      panel.innerHTML = '<img alt="" src="media/card-' + drop[0] + '.jpg"><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
+      root.appendChild(panel);
     } else {
       const goods = { energy: ["Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], data: ["Data cache", 20, "16 Data for repairs."], land: ["Hex brand", 40, "One open hex becomes yours, if a battle is open."] };
       const g = goods[shopPick.id];
