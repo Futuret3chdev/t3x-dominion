@@ -214,7 +214,7 @@
   .shopcard.mythic, .feature { border-color: var(--gold); }
   .shopcard, .feature, .shopbuy { position: relative; z-index: 1; cursor: pointer; }
   .shoppick { margin: 10px 0; background: linear-gradient(180deg, #3a2a22, #1a140f); border-radius: 16px; padding: 8px; border: 1px solid #e6c56a; }
-  .shoppick img { width: 100%; max-height: 360px; object-fit: contain; border-radius: 16px; display: block; background: #07090c; }
+  .shopanim { width: 100%; max-height: 420px; object-fit: cover; border-radius: 14px; display: block; background: #120e0a; }
   .shoppick h3 { margin: 8px 0 0; }
   .shopbuy { display: block; width: 100%; min-height: 48px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--gold); background: #172028; color: #f4f7f8; }
   @keyframes shine { 55% { transform: translateX(120%); } 100% { transform: translateX(120%); } }
@@ -814,7 +814,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=nocrystal"></script>
-<script src="shell.js?v=nocrystal"></script>
+<script src="decks.js?v=art"></script>
+<script src="shell.js?v=art"></script>
 </body>
 </html>

@@ -363,20 +363,23 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = '<div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div><p class="muted">' + c.line + "</p></div>";
+        card.innerHTML = '<img alt="" src="media/card-' + c.id + '.jpg"><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
         card.onclick = function () { shopPick = { kind: "card", id: c.id }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
     } else {
+      const grid = document.createElement("div");
+      grid.className = "shopgrid";
       [["energy", "Energy cache", 20], ["data", "Data cache", 20], ["land", "Hex brand", 40]].forEach(function (g) {
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard rare";
-        card.innerHTML = '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
+        card.innerHTML = '<img alt="" src="media/card-supply-' + g[0] + '.jpg"><div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
         card.onclick = function () { shopPick = { kind: "supply", id: g[0] }; redraw(); };
-        root.appendChild(card);
+        grid.appendChild(card);
       });
+      root.appendChild(grid);
     }
   }
   function paintShopPick(root, redraw) {
@@ -416,7 +419,7 @@
       const c = allCards().find(function (card) { return card.id === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = "<h3>" + c.name + "</h3><p class='price'>10 T3X</p><p>" + c.line + "</p><p class='muted'>" + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + c.id + '.jpg"><source src="media/vid-' + c.id + '.mp4" type="video/mp4"></video><h3>' + c.name + '</h3><p class="price">10 T3X</p><p>' + c.line + '</p><p class="muted">' + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -437,7 +440,7 @@
       const g = goods[shopPick.id];
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = "<h3>" + g[0] + "</h3><p class='price'>" + g[1] + " T3X</p><p>" + g[2] + "</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-supply-' + shopPick.id + '.jpg"><source src="media/vid-supply-' + shopPick.id + '.mp4" type="video/mp4"></video><h3>' + g[0] + '</h3><p class="price">' + g[1] + " T3X</p><p>" + g[2] + "</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -461,6 +464,8 @@
       root.appendChild(panel);
       root.appendChild(buyBtn);
     }
+    const clip = root.querySelector(".shopanim");
+    if (clip) { const started = clip.play(); if (started && started.catch) started.catch(function () {}); }
     root.appendChild(note);
   }
 
