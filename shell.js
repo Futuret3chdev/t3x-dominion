@@ -427,5 +427,6 @@
   document.getElementById("hudPull").onclick = () => document.querySelector(".app").classList.toggle("hudopen");
   document.getElementById("pauseBtn").onclick = () => { ensureAudio(); setPause(!paused); };
   document.getElementById("muteBtn").onclick = () => { ensureAudio(); setMute(!muted); };
+  document.querySelectorAll(".royal video").forEach((v) => { const started = v.play(); if (started && started.catch) started.catch(() => {}); });
   render("home");
 })();

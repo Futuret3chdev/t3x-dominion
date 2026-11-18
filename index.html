@@ -164,11 +164,9 @@
   }
   .deckbtn { width: 64px; height: 44px; overflow: visible; background: transparent; border-color: transparent; padding: 0; }
   .deckgif { width: 64px; height: 44px; object-fit: contain; display: block; pointer-events: none; }
-  .sidecard { position: absolute; top: 46%; z-index: 4; width: 68px; padding: 0; border: 0; background: transparent; transform: translateY(-50%); }
-  .sidecard.left { left: 6px; }
-  .sidecard.right { right: 6px; }
-  .sidecard img { width: 68px; height: 96px; object-fit: cover; object-position: center top; border-radius: 10px; display: block; border: 2px solid #f0d78c; box-shadow: 0 0 0 1px #7a1f3d, 0 10px 18px rgba(0,0,0,.5); }
-  .sidecard span { display: block; margin-top: 4px; text-align: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #fff4cc; text-shadow: 0 1px 2px #000; }
+  .royals { display: flex; align-items: center; gap: 18px; margin-right: 28px; }
+  .royal { width: 46px; height: 64px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: transparent; flex: none; box-shadow: 0 0 0 1px #e6c56a; }
+  .royal video { width: 46px; height: 64px; object-fit: cover; display: block; pointer-events: none; }
   .deckrow { display: none; }
   .decklaunch { display: flex; gap: 8px; align-items: center; text-align: left; min-height: 64px; border-radius: 14px; border: 1px solid var(--gold); background: #10161c; padding: 8px; }
   .decklaunch .deck { position: relative; width: 28px; height: 22px; flex: none; }
@@ -241,6 +239,14 @@
 <div class="app">
   <header>
     <div class="top">
+      <div class="royals">
+        <button class="royal" id="unitDeckBtn" type="button" aria-label="Units">
+          <video autoplay muted loop playsinline poster="media/card-queen.jpg"><source src="media/vid-queen.mp4" type="video/mp4"></video>
+        </button>
+        <button class="royal" id="powerDeckBtn" type="button" aria-label="Power">
+          <video autoplay muted loop playsinline poster="media/card-king.jpg"><source src="media/vid-king.mp4" type="video/mp4"></video>
+        </button>
+      </div>
       <a class="mark foldbit" href="https://futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/futuret3ch-mark.png" alt="Futuret3Ch"></a>
       <a class="mark foldbit" href="https://t3x.futuret3ch.com.au" target="_blank" rel="noreferrer"><img src="brand/t3x-badge.png" alt="T3X"></a>
       <div class="foldbit">
@@ -312,14 +318,6 @@
     </aside>
     <div class="board-wrap" id="boardWrap">
       <svg class="board" id="board" role="group" aria-label="Hex grid. You are at the bottom. The enemy is at the top."></svg>
-      <button class="sidecard left" id="unitDeckBtn" type="button" aria-label="Units">
-        <img src="media/card-queen.jpg" alt="">
-        <span>Units</span>
-      </button>
-      <button class="sidecard right" id="powerDeckBtn" type="button" aria-label="Power">
-        <img src="media/card-king.jpg" alt="">
-        <span>Power</span>
-      </button>
       <div class="banner" id="banner" hidden>Enemy turn — watch</div>
       <div class="brief" id="brief">
         <article class="card">
@@ -814,7 +812,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=art"></script>
-<script src="shell.js?v=art"></script>
+<script src="decks.js?v=royalsbar"></script>
+<script src="shell.js?v=royalsbar"></script>
 </body>
 </html>
