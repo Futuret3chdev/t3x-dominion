@@ -171,7 +171,10 @@
   .deckbtn { width: 64px; height: 44px; overflow: visible; background: transparent; border-color: transparent; padding: 0; }
   .deckgif { width: 64px; height: 44px; object-fit: contain; display: block; pointer-events: none; }
   .royals { display: flex; align-items: center; gap: 18px; margin-right: 28px; }
-  .royal { width: 54px; height: 76px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: #120e0a; flex: none; box-shadow: 0 0 0 1px #e6c56a; }
+  .royal.on { box-shadow: 0 0 0 3px #fff1b8, 0 0 22px 6px #f0c14a; transform: scale(1.12); }
+  .ccard.picked { border-color: #fff1b8; box-shadow: 0 0 0 3px #fff1b8, 0 0 18px 2px #f0c14a; background: linear-gradient(180deg, #4a3810, #1a1408); opacity: 1; }
+  .ccard.picked b { color: #ffe08a; }
+  .pickedtag { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #f0c14a; color: #1a1206; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
   .royal video { width: 54px; height: 76px; object-fit: cover; object-position: center 18%; display: block; pointer-events: none; }
   .deckrow { display: none; }
   .decklaunch { display: flex; gap: 8px; align-items: center; text-align: left; min-height: 64px; border-radius: 14px; border: 1px solid var(--gold); background: #10161c; padding: 8px; }
@@ -832,7 +835,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=dance"></script>
+<script src="decks.js?v=pick"></script>
 <script src="shell.js?v=x"></script>
 </body>
 </html>

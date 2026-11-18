@@ -768,6 +768,7 @@
         }
         if (!own) return name + " is still in the field. Hold the hexes shown on the card.";
         Game.build(id);
+        if (id === "queen" || id === "king") markRoyals(id);
         const sheet = document.getElementById("cascade");
         if (sheet) sheet.hidden = true;
         const view = document.getElementById("viewer");
@@ -1027,8 +1028,15 @@
     }
     box.appendChild(rest);
   }
+  function markRoyals(who) {
+    const queen = document.getElementById("unitDeckBtn");
+    const king = document.getElementById("powerDeckBtn");
+    if (queen) queen.classList.toggle("on", who === "queen");
+    if (king) king.classList.toggle("on", who === "king");
+  }
   function openCascade(kind) {
     openKind = kind;
+    markRoyals(kind === "units" ? "queen" : "king");
     const sheet = document.getElementById("cascade");
     if (!sheet) return;
     sheet.hidden = false;
@@ -1042,7 +1050,7 @@
     const close = document.createElement("button");
     close.className = "x"; close.type = "button"; close.setAttribute("aria-label", "Close");
     close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
-    close.onclick = () => { sheet.hidden = true; syncHud(); };
+    close.onclick = () => { sheet.hidden = true; markRoyals(""); syncHud(); };
     head.appendChild(req); head.appendChild(close);
     sheet.appendChild(head);
     const detail = document.createElement("div");
@@ -1062,10 +1070,20 @@
     cards.forEach((card, i) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "ccard fall" + (card.ready ? "" : " locked") + (card.gold ? " gold" : "");
+      const royal = card.id === "queen" || card.id === "king";
+      const picked = royal && Game.S && Game.S.buildKind === card.id;
+      b.className = "ccard fall" + (card.ready ? "" : " locked") + (card.gold ? " gold" : "") + (picked ? " picked" : "");
       b.style.setProperty("--i", String(Math.min(i, 14)));
-      b.innerHTML = (card.art ? '<img alt="" src="' + card.art + '">' : "") + "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>";
-      b.onclick = () => showDetail(card);
+      b.innerHTML = (card.art ? '<img alt="" src="' + card.art + '">' : "") + "<b>" + card.name + "</b><span class='muted'>" + card.kicker + "</span><span class='count'>" + card.countLabel + "</span>" + (picked ? "<span class='pickedtag'>Selected</span>" : "");
+      b.onclick = () => {
+        if (royal) {
+          grid.querySelectorAll(".ccard.picked").forEach(function (n) { n.classList.remove("picked"); const tag = n.querySelector(".pickedtag"); if (tag) tag.remove(); });
+          b.classList.add("picked");
+          if (!b.querySelector(".pickedtag")) b.insertAdjacentHTML("beforeend", "<span class='pickedtag'>Selected</span>");
+          markRoyals(card.id);
+        }
+        showDetail(card);
+      };
       grid.appendChild(b);
     });
     sheet.appendChild(grid);
