@@ -138,7 +138,7 @@
   .gcard { width: 132px; flex: none; padding: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--gold); background: #07090c; text-align: left; }
   .gcard img { width: 100%; height: 168px; object-fit: cover; display: block; }
   .gcard span { display: block; padding: 6px 8px 8px; }
-  .shell { position: fixed; inset: 0; z-index: 30; background: rgba(7,9,12,.94); overflow: auto; padding: 16px 14px 28px; }
+  .shell { position: fixed; inset: 0; z-index: 30; background: #07090c; overflow: auto; padding: 16px 14px 28px; }
   .shell-inner { width: min(560px, 100%); margin: 0 auto; }
   .shell h2 { font-family: Oswald, sans-serif; font-size: 40px; margin: 8px 0; letter-spacing: 0.04em; }
   .menu-actions, .stack { display: grid; gap: 8px; }
@@ -198,10 +198,12 @@
   .viewer .cardgif { width: auto; max-width: 100%; height: auto; max-height: 100%; object-fit: contain; display: block; }
   @keyframes drift { 50% { transform: scale(1.05); } }
   .drift { animation: drift 5s ease-in-out infinite; transform-origin: center; }
-  .shopbar { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 12px; }
-  .shopbar b { color: var(--gold); font-size: 22px; letter-spacing: .06em; }
+  .shopbar { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 12px; padding: 8px 12px; border-radius: 12px; background: #12181e; border: 1px solid #3a4c5a; }
+  .shopbar span { color: #f4f7f8; }
+  .shopbar b { color: #e6c56a; font-size: 22px; letter-spacing: .06em; }
   .shopfilters { display: flex; gap: 8px; margin-bottom: 12px; }
-  .shopfilters button.on { border-color: var(--gold); color: var(--gold); }
+  .shopfilters button { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid #3a4c5a; background: #172028; color: #f4f7f8; -webkit-appearance: none; appearance: none; font-weight: 650; }
+  .shopfilters button.on { border-color: #e6c56a; background: #e6c56a; color: #1a1206; }
   .feature { position: relative; display: block; width: 100%; padding: 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--gold); background: #0c1218; text-align: left; margin-bottom: 12px; box-shadow: 0 0 24px rgba(212,175,55,.25); }
   .feature img { width: 100%; height: 220px; object-fit: cover; display: block; }
   .feature .cap, .shopcard .cap { padding: 8px 10px 10px; }
