@@ -161,6 +161,17 @@
     .cards-row { flex-direction: column; }
     .gcard { width: 100%; }
   }
+  .deckrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .decklaunch { display: flex; gap: 8px; align-items: center; text-align: left; min-height: 64px; border-radius: 14px; border: 1px solid var(--gold); background: #10161c; padding: 8px; }
+  .decklaunch .deck { position: relative; width: 28px; height: 22px; flex: none; }
+  .cascade { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 7; max-height: 62%; overflow: auto; background: rgba(12,16,20,.97); border: 1px solid var(--gold); border-radius: 16px; padding: 10px; }
+  .rain { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 8px 0; }
+  .back { display: block; height: 36px; border-radius: 4px; border: 1px solid var(--gold); background: linear-gradient(160deg, #1c2833, #0c1218); }
+  .casgrid { display: grid; gap: 8px; }
+  .ccard { display: grid; gap: 2px; text-align: left; border-radius: 12px; border: 1px solid var(--line); background: #10161c; padding: 8px; }
+  .ccard.locked { opacity: .55; }
+  .fall { animation: fall .55s ease both; animation-delay: calc(var(--i) * 16ms); }
+  @keyframes fall { from { transform: translateY(-80px) rotate(var(--r, -2deg)); opacity: 0; } to { transform: none; opacity: 1; } }
 </style>
 </head>
 <body>
@@ -245,12 +256,19 @@
     </div>
     <aside class="dock" id="dock">
       <div class="scroll">
-        <div class="grid2">
-          <div class="box"><p class="muted">Energy · builds units</p><p class="num" id="energy">55</p><p class="muted" id="energyNext">+20 at end of turn</p></div>
-          <div class="box"><p class="muted">Data · repairs only</p><p class="num plain" id="data">10</p><p class="muted" id="dataNext">+3 at end of turn</p></div>
+        <div class="deckrow">
+          <button class="decklaunch" id="powerDeckBtn" type="button">
+            <span class="deck" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span><b>Power</b><span class="muted" id="powerHint">Energy and Data</span></span>
+          </button>
+          <button class="decklaunch" id="unitDeckBtn" type="button">
+            <span class="deck" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span><b>Units</b><span class="muted">Scout to Artillery</span></span>
+          </button>
         </div>
+        <span id="energy" hidden>55</span><span id="energyNext" hidden></span><span id="data" hidden>10</span><span id="dataNext" hidden></span>
         <div class="read" id="read"></div>
-        <div class="grid2" id="builds"></div>
+        <div id="builds" hidden></div>
         <div>
           <div class="muted">What just happened</div>
           <ul class="log" id="log"></ul>
@@ -258,6 +276,7 @@
       </div>
       <button class="end" id="endBtn" type="button"><strong id="endTitle">Waiting to start</strong><span id="endSub">Press Start. You are teal, at the bottom.</span></button>
     </aside>
+    <div class="cascade" id="cascade" hidden></div>
   </div>
 </div>
 <div class="modal" id="help" hidden>
@@ -363,7 +382,7 @@ function evaluate() {
   if (pu === 0 && c.player === 0) return { winner: "enemy", reason: "You have no units and no land left." };
   return null;
 }
-function endIfWon() { const r = evaluate(); if (!r) return; S.phase = "end"; S.winner = r.winner; S.winReason = r.reason; S.script = []; S.buildKind = null; }
+function endIfWon() { const r = evaluate(); if (!r) return; S.phase = "end"; S.winner = r.winner; S.winReason = r.reason; S.script = []; S.buildKind = null; if (r.winner === "player" && window.DominionCards) DominionCards.onWin(); }
 function apply(intent) {
   if (intent.kind === "spawn") {
     const st = STATS[intent.unitKind], k = key(intent.q, intent.r), tile = S.tiles[k];
@@ -397,6 +416,7 @@ function apply(intent) {
   if (prev === unit.side) log(who + " " + st.name + " repositioned on land they already hold.");
   else if (prev === null) log(who + " " + st.name + " claimed open ground. " + (yours ? "You hold " : "They hold ") + landLine(unit.side) + ".");
   else log(who + " " + st.name + " captured " + (prev === "player" ? "your" : "enemy") + " land. " + (yours ? "You hold " : "They hold ") + landLine(unit.side) + ".");
+  if (yours && prev !== unit.side && window.DominionCards) DominionCards.onCapture();
 }
 function nearest(pos, points) { return points.length ? Math.min(...points.map(p => dist(pos, p))) : 99; }
 function chooseIntent(id) {
@@ -709,6 +729,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, counts, STATS, KINDS };
 create(); draw();
 </script>
+<script src="decks.js"></script>
 <script src="shell.js"></script>
 </body>
 </html>

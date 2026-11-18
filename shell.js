@@ -41,6 +41,7 @@
     }
     paintEarn();
   }
+  window.paintEarn = paintEarn;
   setInterval(accrueEarn, 5000);
   paintEarn();
   function readSaves() {
@@ -247,6 +248,7 @@
         + '<button class="wide" type="button" id="reserve">' + (meta.freeUsed ? "Free Scout already used" : meta.freeScout ? "Free Scout reserved" : "Reserve free Scout") + '</button>'
         + '<h3>T3X Vault</h3><p class="muted">One vault. Connect is coming soon. Every wallet will be accepted — Futuret3Ch is standing up its own chain, with bridging.</p>'
         + '<a class="wide" href="https://t3x-wallet.vercel.app/" target="_blank" rel="noreferrer">T3X Vault</a>'
+        + '<h3>Collections</h3><div id="colRoot"></div>'
         + '<h3>My friends</h3><p class="muted">Names stay on this device. Invites are coming soon.</p>'
         + '<div class="row"><input id="friendName" placeholder="Name" style="flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:#07090c;color:inherit;padding:0 10px"><button type="button" id="addFriend">Add</button></div>'
         + '<div class="stack" id="friendList"></div>'
@@ -268,6 +270,7 @@
         row.querySelector("button").onclick = () => { meta.friends.splice(i, 1); saveMeta(); render("community"); };
         list.appendChild(row);
       });
+      if (window.Collections) Collections.mount(document.getElementById("colRoot"));
     } else if (screen === "updates") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Updates</h2><div class="stack"><article class="box"><b>Now</b><p class="muted">Menu, trailer you can download, three save slots, pass-and-play, community, and the card tray.</p></article><article class="box"><b>Board</b><p class="muted">The phone map stays visible. End turn is no longer cut off.</p></article><article class="box"><b>Rules</b><p class="muted">Bright hexes are moves. Energy builds. Data repairs. 31 of 61 wins.</p></article></div>';
     } else if (screen === "cards") {
