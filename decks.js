@@ -328,6 +328,19 @@
     ["highgate", "Highgate Key", "Fill the Earn bar to 100%."],
     ["cloth", "Banner Cloth", "Send a spare card to a friend."]
   ];
+  function shopFace(poster, video) {
+    return '<video class="shopface" autoplay muted loop playsinline poster="' + poster + '"><source src="' + video + '?v=act" type="video/mp4"></video>';
+  }
+  function playFaces(root) {
+    root.querySelectorAll(".shopface").forEach(function (clip) {
+      clip.muted = true;
+      clip.defaultMuted = true;
+      clip.playsInline = true;
+      const go = function () { const started = clip.play(); if (started && started.catch) started.catch(function () {}); };
+      if (clip.readyState >= 2) go();
+      else clip.addEventListener("loadeddata", go, { once: true });
+    });
+  }
   function mountShop(root, redraw) {
     if (!root) return;
     const m = meta();
@@ -358,7 +371,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard " + tier;
-        card.innerHTML = '<img alt="" src="media/card-' + row[0] + '.jpg"><div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + "</div></div>";
+        card.innerHTML = shopFace("media/card-" + row[0] + ".jpg", "media/vid-" + row[0] + ".mp4") + '<div class="cap"><b>' + row[1] + '</b><div class="' + (owned ? "ownedtag" : "price") + '">' + (owned ? "Owned" : row[2] + " T3X") + "</div></div>";
         card.onclick = function () { shopPick = { kind: "unit", id: row[0] }; redraw(); };
         grid.appendChild(card);
       });
@@ -370,7 +383,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = '<img alt="" src="media/card-' + c.id + '.jpg"><div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
+        card.innerHTML = shopFace("media/card-" + c.id + ".jpg", "media/vid-" + c.id + ".mp4") + '<div class="cap"><b>' + c.name + '</b><div class="price">10 T3X</div></div>';
         card.onclick = function () { shopPick = { kind: "card", id: c.id }; redraw(); };
         grid.appendChild(card);
       });
@@ -390,7 +403,7 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard mythic";
-        card.innerHTML = '<img alt="" src="media/card-' + drop[0] + '.jpg"><div class="cap"><b>' + drop[1] + '</b><div class="price">NFT · Soon</div></div>';
+        card.innerHTML = shopFace("media/card-" + drop[0] + ".jpg", "media/vid-" + drop[0] + ".mp4") + '<div class="cap"><b>' + drop[1] + '</b><div class="price">NFT · Soon</div></div>';
         card.onclick = function () { shopPick = { kind: "nft", id: drop[0] }; redraw(); };
         grid.appendChild(card);
       });
@@ -402,12 +415,13 @@
         const card = document.createElement("button");
         card.type = "button";
         card.className = "shopcard rare";
-        card.innerHTML = '<img alt="" src="media/card-supply-' + g[0] + '.jpg"><div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
+        card.innerHTML = shopFace("media/card-supply-" + g[0] + ".jpg", "media/vid-supply-" + g[0] + ".mp4") + '<div class="cap"><b>' + g[1] + '</b><div class="price">' + g[2] + " T3X</div></div>";
         card.onclick = function () { shopPick = { kind: "supply", id: g[0] }; redraw(); };
         grid.appendChild(card);
       });
       root.appendChild(grid);
     }
+    playFaces(root);
   }
   function paintShopPick(root, redraw) {
     const back = document.createElement("button");
@@ -446,7 +460,7 @@
       const c = allCards().find(function (card) { return card.id === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + c.id + '.jpg"><source src="media/vid-' + c.id + '.mp4?v=play" type="video/mp4"></video><h3>' + c.name + '</h3><p class="price">10 T3X</p><p>' + c.line + '</p><p class="muted">' + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + c.id + '.jpg"><source src="media/vid-' + c.id + '.mp4?v=act" type="video/mp4"></video><h3>' + c.name + '</h3><p class="price">10 T3X</p><p>' + c.line + '</p><p class="muted">' + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -466,14 +480,14 @@
       const drop = nftDrops.find(function (d) { return d[0] === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + drop[0] + '.jpg"><source src="media/vid-' + drop[0] + '.mp4?v=play" type="video/mp4"></video><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + drop[0] + '.jpg"><source src="media/vid-' + drop[0] + '.mp4?v=act" type="video/mp4"></video><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
       root.appendChild(panel);
     } else {
       const goods = { energy: ["Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], data: ["Data cache", 20, "16 Data for repairs."], land: ["Hex brand", 40, "One open hex becomes yours, if a battle is open."] };
       const g = goods[shopPick.id];
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-supply-' + shopPick.id + '.jpg"><source src="media/vid-supply-' + shopPick.id + '.mp4?v=play" type="video/mp4"></video><h3>' + g[0] + '</h3><p class="price">' + g[1] + " T3X</p><p>" + g[2] + "</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-supply-' + shopPick.id + '.jpg"><source src="media/vid-supply-' + shopPick.id + '.mp4?v=act" type="video/mp4"></video><h3>' + g[0] + '</h3><p class="price">' + g[1] + " T3X</p><p>" + g[2] + "</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";

@@ -234,7 +234,7 @@
   .feature .cap, .shopcard .cap { padding: 8px 10px 10px; }
   .shopgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .shopcard { position: relative; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: #0c1218; text-align: left; }
-  .shopcard img { width: 100%; height: 132px; object-fit: cover; display: block; }
+  .shopcard img, .shopcard video { width: 100%; height: 132px; object-fit: cover; display: block; background: #120e0a; pointer-events: none; }
   .shopcard.rare { border-color: #7eb6ff; }
   .shopcard.mythic, .feature { border-color: var(--gold); }
   .shopcard, .feature, .shopbuy { position: relative; z-index: 1; cursor: pointer; }
@@ -855,7 +855,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=play"></script>
+<script src="decks.js?v=act"></script>
 <script src="shell.js?v=cogicons"></script>
 </body>
 </html>
