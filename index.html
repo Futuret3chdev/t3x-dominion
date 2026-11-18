@@ -30,6 +30,8 @@
   .sub { color: var(--muted); font-size: 13px; }
   .tools { margin-left: auto; display: flex; gap: 8px; }
   .ghost { min-height: 44px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); padding: 0 12px; }
+  .x { width: 36px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 999px; background: #e23b3b; color: #fff; display: grid; place-items: center; flex: none; }
+  .x svg { display: block; }
   .scores { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-top: 8px; }
   .you { color: var(--player); } .them { color: var(--enemy); } .mid { color: var(--muted); }
   .bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 4px; }
@@ -308,7 +310,7 @@
   </header>
   <div class="stage">
     <aside class="cards" id="cards" hidden>
-      <div class="row"><b>Cards</b><button class="ghost" id="cardsClose" type="button">Close</button></div>
+      <div class="row"><b>Cards</b><button class="x" id="cardsClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="splitdeck">
         <section>
           <h3>Units</h3>
@@ -356,7 +358,7 @@
 </div>
 <div class="modal" id="help" hidden>
   <article class="help">
-    <div class="row"><h2>How this war works</h2><button class="ghost" id="closeHelp" type="button">Close</button></div>
+    <div class="row"><h2>How this war works</h2><button class="x" id="closeHelp" type="button" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <h3>The goal</h3>
     <p class="muted">Own 31 hexes — half of 61. You also win if the enemy has no units and no land. You lose if they hit 31 first, or you lose both your army and your land.</p>
     <h3>Colors</h3>
@@ -830,7 +832,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=move"></script>
-<script src="shell.js?v=move"></script>
+<script src="decks.js?v=x"></script>
+<script src="shell.js?v=x"></script>
 </body>
 </html>

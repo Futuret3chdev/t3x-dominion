@@ -879,8 +879,9 @@
     title.textContent = card.name;
     const close = document.createElement("button");
     close.type = "button";
-    close.className = "ghost";
-    close.textContent = "Close";
+    close.className = "x";
+    close.setAttribute("aria-label", "Close");
+    close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
     close.onclick = () => { box.hidden = true; syncHud(); };
     bar.appendChild(title);
     bar.appendChild(close);
@@ -1039,7 +1040,8 @@
     const req = document.createElement("button");
     req.className = "ghost"; req.type = "button"; req.textContent = "Requests";
     const close = document.createElement("button");
-    close.className = "ghost"; close.type = "button"; close.textContent = "Close";
+    close.className = "x"; close.type = "button"; close.setAttribute("aria-label", "Close");
+    close.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
     close.onclick = () => { sheet.hidden = true; syncHud(); };
     head.appendChild(req); head.appendChild(close);
     sheet.appendChild(head);
