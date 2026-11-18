@@ -191,6 +191,8 @@
   ];
 
   const fieldUnits = [
+    ["queen", "Queen", 0, 45, 70, 16, 2, 2, "banner", "Walks 2 and shoots 2. Jewel colors, hard to miss."],
+    ["king", "King", 0, 85, 140, 30, 1, 1, "blade", "The crown. Health 140, hits for 30 up close."],
     ["runner", "Runner", 4, 18, 30, 8, 1, 3, "scout", "Walks 3. Faster than a Scout, and easier to lose."],
     ["squire", "Squire", 5, 25, 55, 14, 1, 1, "blade", "A short sword and a short reach. Cheap practice for the line."],
     ["pikeman", "Pikeman", 6, 30, 60, 18, 1, 1, "blade", "Holds the next hex with a longer hit than a Squire."],

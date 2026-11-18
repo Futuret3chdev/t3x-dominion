@@ -164,8 +164,12 @@
   }
   .deckbtn { width: 64px; height: 44px; overflow: visible; background: transparent; border-color: transparent; padding: 0; }
   .deckgif { width: 64px; height: 44px; object-fit: contain; display: block; pointer-events: none; }
-  .deckrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(48px); pointer-events: none; margin: 0; transition: max-height .45s ease, opacity .35s ease, transform .45s ease; }
-  .app.decks-open .deckrow { max-height: 160px; opacity: 1; transform: none; pointer-events: auto; margin-bottom: 8px; }
+  .sidecard { position: absolute; top: 46%; z-index: 4; width: 68px; padding: 0; border: 0; background: transparent; transform: translateY(-50%); }
+  .sidecard.left { left: 6px; }
+  .sidecard.right { right: 6px; }
+  .sidecard img { width: 68px; height: 96px; object-fit: cover; object-position: center top; border-radius: 10px; display: block; border: 2px solid #f0d78c; box-shadow: 0 0 0 1px #7a1f3d, 0 10px 18px rgba(0,0,0,.5); }
+  .sidecard span { display: block; margin-top: 4px; text-align: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #fff4cc; text-shadow: 0 1px 2px #000; }
+  .deckrow { display: none; }
   .decklaunch { display: flex; gap: 8px; align-items: center; text-align: left; min-height: 64px; border-radius: 14px; border: 1px solid var(--gold); background: #10161c; padding: 8px; }
   .decklaunch .deck { position: relative; width: 28px; height: 22px; flex: none; }
   .hudpull { display: none; min-height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); padding: 0 10px; }
@@ -207,7 +211,7 @@
   .shopcard.rare { border-color: #7eb6ff; }
   .shopcard.mythic, .feature { border-color: var(--gold); }
   .shopcard, .feature, .shopbuy { position: relative; z-index: 1; cursor: pointer; }
-  .shoppick { margin: 10px 0; }
+  .shoppick { margin: 10px 0; background: linear-gradient(180deg, #3a2a22, #1a140f); border-radius: 16px; padding: 8px; border: 1px solid #e6c56a; }
   .shoppick img { width: 100%; max-height: 360px; object-fit: contain; border-radius: 16px; display: block; background: #07090c; }
   .shoppick h3 { margin: 8px 0 0; }
   .shopbuy { display: block; width: 100%; min-height: 48px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--gold); background: #172028; color: #f4f7f8; }
@@ -307,6 +311,14 @@
     </aside>
     <div class="board-wrap" id="boardWrap">
       <svg class="board" id="board" role="group" aria-label="Hex grid. You are at the bottom. The enemy is at the top."></svg>
+      <button class="sidecard left" id="unitDeckBtn" type="button" aria-label="Units">
+        <img src="media/card-queen.jpg" alt="">
+        <span>Units</span>
+      </button>
+      <button class="sidecard right" id="powerDeckBtn" type="button" aria-label="Power">
+        <img src="media/card-king.jpg" alt="">
+        <span>Power</span>
+      </button>
       <div class="banner" id="banner" hidden>Enemy turn — watch</div>
       <div class="brief" id="brief">
         <article class="card">
@@ -325,16 +337,7 @@
     </div>
     <aside class="dock" id="dock">
       <div class="scroll">
-        <div class="deckrow">
-          <button class="decklaunch" id="powerDeckBtn" type="button">
-            <span class="deck" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span><b>Power</b><span class="muted" id="powerHint">Energy and Data</span></span>
-          </button>
-          <button class="decklaunch" id="unitDeckBtn" type="button">
-            <span class="deck" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span><b>Units</b><span class="muted">Scout to Artillery</span></span>
-          </button>
-        </div>
+        <div class="deckrow" hidden></div>
         <span id="energy" hidden>55</span><span id="energyNext" hidden></span><span id="data" hidden>10</span><span id="dataNext" hidden></span>
         <div class="read" id="read"></div>
         <div id="builds" hidden></div>
@@ -810,7 +813,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { S.buildKind = null;
 window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, endTurn, build, repair, counts, STATS, KINDS };
 create(); draw();
 </script>
-<script src="decks.js?v=shop2"></script>
-<script src="shell.js?v=shop2"></script>
+<script src="decks.js?v=royals"></script>
+<script src="shell.js?v=royals"></script>
 </body>
 </html>
