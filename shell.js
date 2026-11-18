@@ -409,14 +409,17 @@
 
   const cog = document.getElementById("cogBtn");
   const pop = document.getElementById("cogPop");
+  let cogStamp = 0;
   cog.onclick = (e) => {
     e.stopPropagation();
-    pop.hidden = true;
-    cog.classList.remove("open");
-    cog.setAttribute("aria-expanded", "false");
-    openShell("home");
+    const open = pop.hidden;
+    pop.hidden = !open;
+    cog.classList.toggle("open", open);
+    cog.setAttribute("aria-expanded", String(open));
+    cogStamp = Date.now();
   };
   document.addEventListener("click", (e) => {
+    if (Date.now() - cogStamp < 400) return;
     if (!e.target.closest(".cogwrap")) { pop.hidden = true; cog.classList.remove("open"); cog.setAttribute("aria-expanded", "false"); }
   });
   document.getElementById("menuBtn").onclick = () => { pop.hidden = true; cog.classList.remove("open"); openShell("home"); };

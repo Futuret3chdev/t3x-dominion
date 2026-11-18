@@ -133,7 +133,7 @@
   .cogwrap { position: relative; }
   .cog { transition: transform .45s ease; }
   #cogBtn.open .cog { transform: rotate(70deg); }
-  .cogpop { position: absolute; right: 0; top: 46px; z-index: 8; display: flex; gap: 6px; padding: 8px; border-radius: 16px; border: 1px solid var(--line); background: rgba(16,22,28,.96); box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+  .cogpop { position: fixed; top: 58px; right: 8px; z-index: 40; display: flex; gap: 6px; padding: 8px; border-radius: 16px; border: 1px solid var(--line); background: rgba(16,22,28,.96); box-shadow: 0 12px 30px rgba(0,0,0,.45); }
   .cogpop[hidden] { display: none; }
   #pauseBtn .ic-play { display: none; }
   #pauseBtn.is-paused .ic-pause { display: none; }
@@ -856,6 +856,6 @@ window.Game = { get S() { return S; }, setS(next) { S = next; }, create, draw, e
 create(); draw();
 </script>
 <script src="decks.js?v=sell"></script>
-<script src="shell.js?v=cog"></script>
+<script src="shell.js?v=cogicons"></script>
 </body>
 </html>
