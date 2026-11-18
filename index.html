@@ -82,10 +82,13 @@
   .help h3 { margin: 14px 0 4px; font-size: 15px; }
   .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
   @media (max-width: 959px) {
-    header { padding: 6px 10px 8px; }
-    .top { flex-wrap: nowrap; gap: 6px; }
-    .tools { width: auto; margin-left: auto; }
-    h1 { font-size: 18px; white-space: nowrap; }
+    header { padding: 6px 8px 8px; overflow: visible; }
+    .top { flex-wrap: nowrap; gap: 6px; min-width: 0; }
+    .royals { gap: 10px; margin-right: 6px; flex: none; }
+    .royal, .royal video { width: 44px; height: 62px; }
+    .foldbit { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+    .tools { width: auto; margin-left: 8px; flex: none; }
+    h1 { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sub { white-space: nowrap; font-size: 12px; }
     .ghost { min-height: 36px; padding: 0 10px; }
     .iconbtn { width: 36px; height: 36px; }
