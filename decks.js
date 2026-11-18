@@ -379,16 +379,16 @@
     if (!app) return;
     const sheet = document.getElementById("cascade");
     const tray = document.getElementById("cards");
-    const detail = document.getElementById("cardDetail");
-    const viewing = (sheet && !sheet.hidden) || (tray && !tray.hidden);
+    const view = document.getElementById("viewer");
+    const viewing = (sheet && !sheet.hidden) || (tray && !tray.hidden) || (view && !view.hidden);
     app.classList.toggle("viewing", !!viewing);
-    app.classList.toggle("focuscard", !!(sheet && !sheet.hidden && detail && !detail.hidden));
+    app.classList.toggle("focuscard", !!(view && !view.hidden));
   }
   let openKind = "power";
   let deckList = [];
   function stepCard(dir) {
     if (!deckList.length) return;
-    const box = document.getElementById("cardDetail");
+    const box = document.getElementById("viewer");
     const id = box && box.dataset.id;
     let i = deckList.findIndex(c => c.id === id);
     if (i < 0) i = 0;
@@ -540,10 +540,30 @@
     };
   }
   function showDetail(card) {
-    const box = document.getElementById("cardDetail");
-    if (!box) return;
+    let box = document.getElementById("viewer");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "viewer";
+      box.className = "viewer";
+      document.body.appendChild(box);
+    }
     box.hidden = false;
     box.innerHTML = "";
+    box.dataset.id = card.id;
+    const bar = document.createElement("div");
+    bar.className = "row";
+    const title = document.createElement("b");
+    title.textContent = card.name;
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "ghost";
+    close.textContent = "Close";
+    close.onclick = () => { box.hidden = true; syncHud(); };
+    bar.appendChild(title);
+    bar.appendChild(close);
+    box.appendChild(bar);
+    const rest = document.createElement("div");
+    rest.className = "viewerest";
     if (card.video) {
       const stage = document.createElement("div");
       stage.className = "gifstage";
@@ -551,6 +571,11 @@
       img.className = "cardgif";
       img.alt = "";
       img.src = card.video;
+      img.onload = function () {
+        img.onload = null;
+        img.src = "";
+        img.src = card.video;
+      };
       const prev = document.createElement("button");
       prev.type = "button"; prev.className = "gifnav prev"; prev.setAttribute("aria-label", "Previous card"); prev.textContent = "‹";
       const next = document.createElement("button");
@@ -568,8 +593,6 @@
     }
     box.dataset.id = card.id;
     syncHud();
-    const h = document.createElement("b");
-    h.textContent = card.name;
     const p = document.createElement("p");
     p.textContent = card.explain;
     const note = document.createElement("p");
@@ -631,18 +654,18 @@
       };
       actions.appendChild(sendBtn);
       actions.appendChild(askBtn);
-      box.appendChild(h); box.appendChild(p); box.appendChild(actions); box.appendChild(picks); box.appendChild(stats); box.appendChild(note);
+      rest.appendChild(p); rest.appendChild(actions); rest.appendChild(picks); rest.appendChild(stats); rest.appendChild(note);
     } else {
-      box.appendChild(h); box.appendChild(p); box.appendChild(actions); box.appendChild(stats); box.appendChild(note);
+      rest.appendChild(p); rest.appendChild(actions); rest.appendChild(stats); rest.appendChild(note);
     }
     const wants = (meta().requests || []).filter(r => r.status === "open" && r.dir === "in" && r.cardId === card.id);
     if (wants.length) {
       const w = document.createElement("p");
       w.className = "muted";
       w.textContent = wants.map(r => r.from + " is asking for this.").join(" ");
-      box.appendChild(w);
+      rest.appendChild(w);
     }
-    box.scrollIntoView({ block: "nearest" });
+    box.appendChild(rest);
   }
   function openCascade(kind) {
     openKind = kind;
