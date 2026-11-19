@@ -2,11 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<base href="https://t3x-dominion.vercel.app/">
 <title>T3x Dominion | Presented by Futuret3Ch</title>
 <meta name="description" content="Hold half the hex grid. A wartime strategy game presented by Futuret3Ch.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<script>
+(function () {
+  var host = location.hostname || "";
+  var instant = /fbsbx\.com|facebook\.com|fb\.gg|fbcdn/.test(host);
+  if (!instant) return;
+  var sdk = document.createElement("script");
+  sdk.src = "https://connect.facebook.net/en_US/fbinstant.8.0.js";
+  sdk.onload = function () {
+    if (!window.FBInstant) return;
+    FBInstant.initializeAsync().then(function () {
+      FBInstant.setLoadingProgress(100);
+      return FBInstant.startGameAsync();
+    }).catch(function () {});
+  };
+  document.head.appendChild(sdk);
+})();
+</script>
 <style>
   :root {
     --bg: #07090c; --surface: #10161c; --surface-2: #18222b;
