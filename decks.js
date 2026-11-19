@@ -313,7 +313,7 @@
     el.className = "forge";
     el.innerHTML = "<b>FORGED</b><span>" + name + "</span>";
     document.body.appendChild(el);
-    const sting = new Audio("media/vid-energy.mp4?v=sound");
+    const sting = new Audio("https://t3x-dominion.vercel.app/media/vid-energy.mp4?v=sound");
     sting.volume = 0.55;
     const started = sting.play();
     if (started && started.catch) started.catch(function () {});
@@ -437,7 +437,7 @@
       const st = Game.STATS[row[0]];
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + row[0] + '.jpg"><source src="media/vid-' + row[0] + '.mp4?v=move" type="video/mp4"></video><h3>' + row[1] + '</h3><p class="price">' + row[2] + ' T3X</p><p>' + shopFx[row[0]] + '</p><p class="muted">Field cost ' + st.cost + ' Energy. Health ' + st.hp + '. Hit ' + st.atk + '. Walks ' + st.move + '. Range ' + st.range + '.</p>';
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + row[0] + '.jpg"><source src="https://t3x-dominion.vercel.app/media/vid-' + row[0] + '.mp4?v=move" type="video/mp4"></video><h3>' + row[1] + '</h3><p class="price">' + row[2] + ' T3X</p><p>' + shopFx[row[0]] + '</p><p class="muted">Field cost ' + st.cost + ' Energy. Health ' + st.hp + '. Hit ' + st.atk + '. Walks ' + st.move + '. Range ' + st.range + '.</p>';
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -459,7 +459,7 @@
       const c = allCards().find(function (card) { return card.id === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + c.id + '.jpg"><source src="media/vid-' + c.id + '.mp4?v=act" type="video/mp4"></video><h3>' + c.name + '</h3><p class="price">10 T3X</p><p>' + c.line + '</p><p class="muted">' + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + c.id + '.jpg"><source src="https://t3x-dominion.vercel.app/media/vid-' + c.id + '.mp4?v=act" type="video/mp4"></video><h3>' + c.name + '</h3><p class="price">10 T3X</p><p>' + c.line + '</p><p class="muted">' + c.collection + " · " + c.deck + ". You hold " + (meta().cards[c.id] || 0) + ".</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -479,14 +479,14 @@
       const drop = nftDrops.find(function (d) { return d[0] === shopPick.id; });
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + drop[0] + '.jpg"><source src="media/vid-' + drop[0] + '.mp4?v=act" type="video/mp4"></video><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-' + drop[0] + '.jpg"><source src="https://t3x-dominion.vercel.app/media/vid-' + drop[0] + '.mp4?v=act" type="video/mp4"></video><h3>' + drop[1] + '</h3><p class="soon">Coming soon</p><p>' + drop[2] + '</p><p class="muted">Exclusive NFT card. Not for sale. Earn it from Community · Giveaways.</p>';
       root.appendChild(panel);
     } else {
       const goods = { energy: ["Energy cache", 20, "40 Energy. Used now if a battle is open, otherwise on the next one."], data: ["Data cache", 20, "16 Data for repairs."], land: ["Hex brand", 40, "One open hex becomes yours, if a battle is open."] };
       const g = goods[shopPick.id];
       const panel = document.createElement("article");
       panel.className = "shoppick";
-      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-supply-' + shopPick.id + '.jpg"><source src="media/vid-supply-' + shopPick.id + '.mp4?v=act" type="video/mp4"></video><h3>' + g[0] + '</h3><p class="price">' + g[1] + " T3X</p><p>" + g[2] + "</p>";
+      panel.innerHTML = '<video class="shopanim" autoplay muted loop playsinline poster="media/card-supply-' + shopPick.id + '.jpg"><source src="https://t3x-dominion.vercel.app/media/vid-supply-' + shopPick.id + '.mp4?v=act" type="video/mp4"></video><h3>' + g[0] + '</h3><p class="price">' + g[1] + " T3X</p><p>" + g[2] + "</p>";
       const buyBtn = document.createElement("button");
       buyBtn.type = "button";
       buyBtn.className = "shopbuy";
@@ -780,14 +780,14 @@
     const S = Game.S;
     const m = meta();
     const cards = [
-      { id: "energy", name: "Energy", art: "media/card-energy.jpg", video: "media/vid-energy.mp4", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
-      { id: "data", name: "Data", art: "media/card-data.jpg", video: "media/vid-data.mp4", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
+      { id: "energy", name: "Energy", art: "media/card-energy.jpg", video: "https://t3x-dominion.vercel.app/media/vid-energy.mp4", kicker: "Builds units", countLabel: String(S.energy.player), ready: true, explain: "Energy pays for units. It does not repair. You collect more at the end of the turn for land and relays.", stats: [["You have", S.energy.player], ["Next payday", document.getElementById("energyNext").textContent || ""], ["Scout", "20"], ["Defender", "35"], ["Attacker", "50"], ["Artillery", "65"]], use: () => "Energy is spent when you build a unit. Pick one from the unit deck." },
+      { id: "data", name: "Data", art: "media/card-data.jpg", video: "https://t3x-dominion.vercel.app/media/vid-data.mp4", kicker: "Repairs only", countLabel: String(S.data.player), ready: true, explain: "Data is only for repairs. Select a damaged unit, then repair. It will not build anything.", stats: [["You have", S.data.player], ["Next payday", document.getElementById("dataNext").textContent || ""], ["Repair", "10 Data for 40 health"]], use: () => { if (window.Game) Game.repair(); return "Repair uses Data on the unit you selected."; } }
     ];
     const clips = ["ration", "scrap", "relay", "oil", "barrel", "map", "cloth", "coal", "flare", "medic", "pin", "coin"];
     utilities.forEach((u, i) => {
       const owned = i < m.utilities;
       const n = m.cards[u[0]] || 0;
-      cards.push({ id: u[0], name: u[1], art: "media/card-" + clips[i] + ".jpg", video: "media/vid-" + clips[i] + ".mp4", kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
+      cards.push({ id: u[0], name: u[1], art: "media/card-" + clips[i] + ".jpg", video: "https://t3x-dominion.vercel.app/media/vid-" + clips[i] + ".mp4", kicker: owned ? "Power" : "Still in the forge", countLabel: owned ? "Hold " + n : "Locked", ready: owned && n > 0, explain: u[2] + (owned ? " Using it spends one copy." : " Take more land and this card joins the deck."), stats: [["You hold", n], ["Deck", "Power"], ["Status", owned ? "Earned" : "Locked until you capture more land"]], gold: false, use: () => useUtility(u[0]) });
     });
     cards.sort((a, b) => (a.ready === b.ready ? 0 : a.ready ? -1 : 1));
     return cards;
@@ -813,7 +813,7 @@
     const ready = own && Game.S && Game.S.energy.player >= st.cost && Game.S.phase === "play";
     const art = "media/card-" + id + ".jpg";
     return {
-      id, name, art, video: ["scout", "defender", "attacker", "artillery", "queen", "king"].indexOf(id) >= 0 ? "media/vid-" + id + ".mp4" : "",
+      id, name, art, video: ["scout", "defender", "attacker", "artillery", "queen", "king"].indexOf(id) >= 0 ? "https://t3x-dominion.vercel.app/media/vid-" + id + ".mp4" : "",
       glyph: st.glyph || id, kicker, countLabel: own ? n + " on the map" : (t3x ? t3x + " T3X" : "Locked"),
       ready, explain: role, t3x,
       stats: [["On the map", n], ["Field cost", st.cost + " Energy"], ["Health", st.hp], ["Hit", st.atk], ["Range", st.range], ["Walk", st.move], ["T3X", t3x || "—"]],
@@ -990,7 +990,7 @@
         const fall = { scout: "scout", wall: "defender", blade: "attacker", gun: "artillery", horse: "scout", banner: "defender" };
         img.src = "media/card-" + (fall[card.glyph] || "scout") + ".jpg";
       };
-      const sting = new Audio("media/vid-energy.mp4?v=sound");
+      const sting = new Audio("https://t3x-dominion.vercel.app/media/vid-energy.mp4?v=sound");
       sting.volume = 0.45;
       const started = sting.play();
       if (started && started.catch) started.catch(function () {});

@@ -51,9 +51,9 @@
   function writeSaves(rows) { localStorage.setItem(SAVE_KEY, JSON.stringify(rows)); }
 
   const TRACKS = [
-    { src: "media/in-flight.mp3", title: "In Flight" },
-    { src: "media/where-we-belong.mp3", title: "Where We Belong" },
-    { src: "media/there-be-dragons.mp3", title: "There Be Dragons" }
+    { src: "https://t3x-dominion.vercel.app/media/in-flight.mp3", title: "In Flight" },
+    { src: "https://t3x-dominion.vercel.app/media/where-we-belong.mp3", title: "Where We Belong" },
+    { src: "https://t3x-dominion.vercel.app/media/there-be-dragons.mp3", title: "There Be Dragons" }
   ];
   let music = null, track = 0;
   function playTrack(i) {
@@ -290,7 +290,7 @@
         + '<div class="earn"><span>Earn 1 T3X</span><div class="earnbar"><i class="earnfill"></i></div><b class="earnread">0%</b></div>'
         + '<p class="muted">Leave the game open. A full bar takes about three weeks. At 100% this device holds 1 T3X until the vault pays it.</p>';
     } else if (screen === "trailer") {
-      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">T3X Dominion, the Futuret3Ch and T3X logos, and the T3X supported ecosystem. Play it here or keep the file.</p><video class="trailer" controls playsinline src="media/trailer.mp4?v=sound"></video><p><a class="wide" style="display:inline-block" href="media/trailer.mp4?v=sound" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
+      body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Trailer</h2><p class="muted">T3X Dominion, the Futuret3Ch and T3X logos, and the T3X supported ecosystem. Play it here or keep the file.</p><video class="trailer" controls playsinline src="https://t3x-dominion.vercel.app/media/trailer.mp4?v=sound"></video><p><a class="wide" style="display:inline-block" href="https://t3x-dominion.vercel.app/media/trailer.mp4?v=sound" download="t3x-dominion-trailer.mp4">Download trailer</a></p>';
     } else if (screen === "saves") {
       body.innerHTML = '<button class="iconbtn" type="button" data-go="home" aria-label="Back">' + icons.back + '</button><h2>Saves</h2><p class="muted">Three slots on this device. The newest replaces the oldest.</p><button class="wide" type="button" id="saveNow">Save this battle</button><div class="stack" id="slotList"></div>';
       const list = body.querySelector("#slotList");
@@ -393,15 +393,15 @@
     };
     units.innerHTML = "";
     const listed = (window.DominionCards && DominionCards.listUnits) ? DominionCards.listUnits() : [
-      { id: "scout", name: "Scout", kicker: "20 Energy", art: "media/card-scout.jpg" },
-      { id: "defender", name: "Defender", kicker: "35 Energy", art: "media/card-defender.jpg" },
-      { id: "attacker", name: "Attacker", kicker: "50 Energy", art: "media/card-attacker.jpg" },
-      { id: "artillery", name: "Artillery", kicker: "65 Energy", art: "media/card-artillery.jpg" }
+      { id: "scout", name: "Scout", kicker: "20 Energy", art: "https://t3x-dominion.vercel.app/media/card-scout.jpg" },
+      { id: "defender", name: "Defender", kicker: "35 Energy", art: "https://t3x-dominion.vercel.app/media/card-defender.jpg" },
+      { id: "attacker", name: "Attacker", kicker: "50 Energy", art: "https://t3x-dominion.vercel.app/media/card-attacker.jpg" },
+      { id: "artillery", name: "Artillery", kicker: "65 Energy", art: "https://t3x-dominion.vercel.app/media/card-artillery.jpg" }
     ];
     listed.forEach(u => units.appendChild(card(u.id, u.name, u.kicker, u.art)));
     if (!powers.childElementCount) {
       [["energy", "Energy", "Builds units", "energy"], ["data", "Data", "Repairs only", "data"], ["power-ration", "Field Ration", "Power", "ration"], ["power-scrap", "Scrap Charge", "Power", "scrap"], ["power-relay", "Relay Tap", "Power", "relay"], ["power-oil", "Night Oil", "Power", "oil"], ["power-barrel", "Spare Barrel", "Power", "barrel"], ["power-map", "Map Scrap", "Power", "map"], ["power-cloth", "Banner Cloth", "Power", "cloth"], ["power-coal", "Forge Coal", "Power", "coal"], ["power-flare", "Signal Flare", "Power", "flare"], ["power-medic", "Medic Kit", "Power", "medic"], ["power-pin", "Siege Pin", "Power", "pin"], ["power-coin", "Oath Coin", "Power", "coin"]].forEach(([id, name, line, art]) => {
-        powers.appendChild(card(id, name, line, "media/card-" + art + ".jpg"));
+        powers.appendChild(card(id, name, line, "https://t3x-dominion.vercel.app/media/card-" + art + ".jpg"));
       });
     }
     if (window.DominionCards) DominionCards.sync();
@@ -432,8 +432,8 @@
     cardsBtn.setAttribute("aria-pressed", String(open));
     if (!img) return;
     clearTimeout(window._deckGif);
-    img.src = (open ? "media/icon-shuffle.gif" : "media/icon-return.gif") + "?t=" + Date.now();
-    window._deckGif = setTimeout(() => { img.src = open ? "media/icon-fan.gif" : "media/icon-one.gif"; }, 780);
+    img.src = (open ? "https://t3x-dominion.vercel.app/media/icon-shuffle.gif" : "https://t3x-dominion.vercel.app/media/icon-return.gif") + "?t=" + Date.now();
+    window._deckGif = setTimeout(() => { img.src = open ? "https://t3x-dominion.vercel.app/media/icon-fan.gif" : "https://t3x-dominion.vercel.app/media/icon-one.gif"; }, 780);
   };
   document.getElementById("cardsClose").onclick = () => { document.getElementById("cards").hidden = true; if (window.DominionCards) DominionCards.sync(); };
   document.getElementById("hudPull").onclick = () => document.querySelector(".app").classList.toggle("hudopen");
